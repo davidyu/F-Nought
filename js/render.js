@@ -153,14 +153,14 @@ var Render = {
             maxy = segment.p2.screen.y;
         }
 
-        Render.player(ctx, width, height, resolution, roadWidth, sprites, speed/maxSpeed,
-                      cameraDepth/playerZ,
-                      width/2,
-                      height,
-                      speed * (keyLeft ? -1 : keyRight ? 1 : 0),
-                      0);
+        Render.player( ctx, width, height, resolution, roadWidth, sprites, speed/maxSpeed,
+                       cameraDepth/playerZ,
+                       width/2,
+                       height,
+                       speed * ( keyLeft ? -1 : keyRight ? 1 : 0 ),
+                       0 );
     },
 
-    rumbleWidth:     function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(6,  2*lanes); },
-    laneMarkerWidth: function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(32, 8*lanes); }
+    rumbleWidth:     function( projectedRoadWidth, lanes ) { return projectedRoadWidth/Math.max(6,  2*lanes); },
+    laneMarkerWidth: function( projectedRoadWidth, lanes ) { return projectedRoadWidth/Math.max(32, 8*lanes); }
 }

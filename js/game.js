@@ -12,7 +12,7 @@ var Game = {
                 dt     = 0,
                 gdt    = 0;
 
-            function frame() {
+            var frame = function() {
                 now = Util.timestamp();
                 dt = Math.min( 1, ( now - last ) / 1000 );
                 gdt += dt;
@@ -70,8 +70,7 @@ var Game = {
         playerX = Util.limit( playerX, -2, 2 );     // dont ever let player go too far out of bounds
         speed   = Util.limit( speed, 0, maxSpeed ); // or exceed maxSpeed
 
-    }
-
+    },
 
     setKeyListener: function( keys ) {
         var onkey = function( keyCode, mode ) {
@@ -109,36 +108,36 @@ var Game = {
 
 var Settings = {
 
-    fps           : 60;                      // how many 'update' frames per second
-    step          : 1/fps;                   // how long is each frame (in seconds)
-    width         : 1024;                    // logical canvas width
-    height        : 768;                     // logical canvas height
-    segments      : [];                      // array of road segments
-    canvas        : Dom.get('canvas');       // our canvas...
-    ctx           : canvas.getContext('2d'); // ...and its drawing context
-    background    : null;                    // our background image (loaded below)
-    sprites       : null;                    // our spritesheet (loaded below)
-    resolution    : null;                    // scaling factor to provide resolution independence (computed)
-    roadWidth     : 2000;                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
-    segmentLength : 200;                     // length of a single segment
-    rumbleLength  : 3;                       // number of segments per red/white rumble strip
-    trackLength   : null;                    // z length of entire track (computed)
-    lanes         : 3;                       // number of lanes
-    fieldOfView   : 100;                     // angle (degrees) for field of view
-    cameraHeight  : 1000;                    // z height of camera
-    cameraDepth   : null;                    // z distance camera is from screen (computed)
-    drawDistance  : 300;                     // number of segments to draw
-    playerX       : 0;                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
-    playerZ       : null;                    // player relative z distance from camera (computed)
-    fogDensity    : 5;                       // exponential fog density
-    position      : 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
-    speed         : 0;                       // current speed
-    maxSpeed      : segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
-    accel         :  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
-    breaking      : -maxSpeed;               // deceleration rate when braking
-    decel         : -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
-    offRoadDecel  : -maxSpeed/2;             // off road deceleration is somewhere in between
-    offRoadLimit  :  maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
+    fps           : 60,                      // how many 'update' frames per second
+    step          : 1/this.fps,                   // how long is each frame (in seconds)
+    width         : 1024,                    // logical canvas width
+    height        : 768,                     // logical canvas height
+    segments      : [],                      // array of road segments
+    canvas        : Dom.get('canvas'),       // our canvas...
+    ctx           : this.canvas.getContext('2d'), // ...and its drawing context
+    background    : null,                    // our background image (loaded below)
+    sprites       : null,                    // our spritesheet (loaded below)
+    resolution    : null,                    // scaling factor to provide resolution independence (computed)
+    roadWidth     : 2000,                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
+    segmentLength : 200,                     // length of a single segment
+    rumbleLength  : 3,                       // number of segments per red/white rumble strip
+    trackLength   : null,                    // z length of entire track (computed)
+    lanes         : 3,                       // number of lanes
+    fieldOfView   : 100,                     // angle (degrees) for field of view
+    cameraHeight  : 1000,                    // z height of camera
+    cameraDepth   : null,                    // z distance camera is from screen (computed)
+    drawDistance  : 300,                     // number of segments to draw
+    playerX       : 0,                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
+    playerZ       : null,                    // player relative z distance from camera (computed)
+    fogDensity    : 5,                       // exponential fog density
+    position      : 0,                       // current camera Z position (add playerZ to get player's absolute Z position)
+    speed         : 0,                       // current speed
+    maxSpeed      : this.segmentLength/this.step,      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+    accel         :  this.maxSpeed/5,             // acceleration rate - tuned until it 'felt' right
+    breaking      : -this.maxSpeed,               // deceleration rate when braking
+    decel         : -this.maxSpeed/5,             // 'natural' deceleration rate when neither accelerating, nor braking
+    offRoadDecel  : -this.maxSpeed/2,             // off road deceleration is somewhere in between
+    offRoadLimit  :  this.maxSpeed/4,             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
 
 
     reset: function( options ) {
@@ -160,6 +159,29 @@ var Settings = {
 
       if ((segments.length==0) || (options.segmentLength) || (options.rumbleLength))
         resetRoad(); // only rebuild road when necessary
+    },
+
+    resetRoad: function() {
+        segments = [];
+        for(var n = 0 ; n < 500 ; n++) {
+            segments.push( {
+                index: n,
+                p1: { world: { z:  n   *segmentLength }, camera: {}, screen: {} },
+                p2: { world: { z: (n+1)*segmentLength }, camera: {}, screen: {} },
+                color: Math.floor( n/rumbleLength ) % 2 ? COLORS.DARK : COLORS.LIGHT
+            } );
+        }
+
+        segments[findSegment(playerZ).index + 2].color = COLORS.START;
+        segments[findSegment(playerZ).index + 3].color = COLORS.START;
+        for(var n = 0 ; n < rumbleLength ; n++)
+            segments[segments.length-1-n].color = COLORS.FINISH;
+
+        trackLength = segments.length * segmentLength;
+    },
+
+    findSegment: function( z ) {
+        return segments[ Math.floor( z/segmentLength ) % segments.length ];
     }
 
 }
