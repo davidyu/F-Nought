@@ -3,7 +3,11 @@
 //these DOM helpers are really useful
 var Dom = {
 
-    get:  function( id )                     { return (( id instanceof HTMLElement ) || ( id === document ) ) ? id : document.getElementById( id ); },
+    get:  function( id ) {
+        return (( id instanceof HTMLElement ) || ( id === document ) ) ? 
+               id : document.getElementById( id ); 
+    },
+
     set:  function( id, html )               { Dom.get( id ).innerHTML = html;                        },
     on:   function( ele, type, fn, capture ) { Dom.get( ele ).addEventListener( type, fn, capture );    },
     un:   function( ele, type, fn, capture ) { Dom.get( ele ).removeEventListener( type, fn, capture ); },
@@ -82,4 +86,15 @@ var Util = {
         var max2 = x2 + ( w2*half );
         return ! ( ( max1 < min2 ) || ( min1 > max2 ) );
     }
+}
+
+
+if ( !window.requestAnimationFrame ) { // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+    window.requestAnimationFrame = window.webkitRequestAnimationFrame || 
+                                   window.mozRequestAnimationFrame    || 
+                                   window.oRequestAnimationFrame      || 
+                                   window.msRequestAnimationFrame     || 
+                                   function( callback, element ) {
+                                       window.setTimeout( callback, 1000 / 60 );
+                                   }
 }
