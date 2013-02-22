@@ -78,6 +78,7 @@ var Util = {
         p.screen.w     = Math.round( ( p.screen.scale * roadWidth * width / 2 ) );
     },
 
+    //test rectangle collision
     overlap: function( x1, w1, x2, w2, percent ) {
         var half = ( percent || 1 ) / 2;
         var min1 = x1 - ( w1*half );
