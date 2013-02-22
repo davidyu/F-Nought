@@ -112,6 +112,55 @@ var Render = {
         }
     },
 
+    //the big show
+
+    render: function() {
+
+        var baseSegment = findSegment(position);
+        var maxy        = height;
+
+        ctx.clearRect(0, 0, width, height);
+
+        Render.background(ctx, background, width, height, BACKGROUND.SKY);
+        Render.background(ctx, background, width, height, BACKGROUND.HILLS);
+        Render.background(ctx, background, width, height, BACKGROUND.TREES);
+
+        var n, segment;
+
+        for(n = 0 ; n < drawDistance ; n++) {
+
+            segment        = segments[(baseSegment.index + n) % segments.length];
+            segment.looped = segment.index < baseSegment.index;
+            segment.fog    = Util.exponentialFog(n/drawDistance, fogDensity);
+
+            Util.project(segment.p1, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+            Util.project(segment.p2, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+
+            if ((segment.p1.camera.z <= cameraDepth) || // behind us
+                (segment.p2.screen.y >= maxy))          // clip by (already rendered) segment
+                continue;
+
+            Render.segment(ctx, width, lanes,
+                           segment.p1.screen.x,
+                           segment.p1.screen.y,
+                           segment.p1.screen.w,
+                           segment.p2.screen.x,
+                           segment.p2.screen.y,
+                           segment.p2.screen.w,
+                           segment.fog,
+                           segment.color);
+
+            maxy = segment.p2.screen.y;
+        }
+
+        Render.player(ctx, width, height, resolution, roadWidth, sprites, speed/maxSpeed,
+                      cameraDepth/playerZ,
+                      width/2,
+                      height,
+                      speed * (keyLeft ? -1 : keyRight ? 1 : 0),
+                      0);
+    },
+
     rumbleWidth:     function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(6,  2*lanes); },
     laneMarkerWidth: function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(32, 8*lanes); }
 }

@@ -46,6 +46,33 @@ var Game = {
         }
     },
 
+    update: function( dt ) {
+
+        position = Util.increase( position, dt * speed, trackLength );
+
+        var dx = dt * 2 * ( speed/maxSpeed ); // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+
+        if ( keyLeft )
+            playerX = playerX - dx;
+        else if ( keyRight )
+            playerX = playerX + dx;
+
+        if ( keyFaster )
+            speed = Util.accelerate( speed, accel, dt );
+        else if ( keySlower )
+            speed = Util.accelerate( speed, breaking, dt );
+        else
+            speed = Util.accelerate( speed, decel, dt );
+
+        if ( ( ( playerX < -1 ) || ( playerX > 1 ) ) && ( speed > offRoadLimit ) )
+            speed = Util.accelerate( speed, offRoadDecel, dt );
+
+        playerX = Util.limit( playerX, -2, 2 );     // dont ever let player go too far out of bounds
+        speed   = Util.limit( speed, 0, maxSpeed ); // or exceed maxSpeed
+
+    }
+
+
     setKeyListener: function( keys ) {
         var onkey = function( keyCode, mode ) {
             var n, k;
