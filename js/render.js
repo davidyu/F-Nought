@@ -158,7 +158,7 @@ var Render = {
         }
 
         Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
-                       Settings.cameraDepth/Settings.playerZ,
+                       Settings.cameraDepth/(Settings.playerZ*2),
                        Settings.width/2,
                        Settings.height,
                        Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),
