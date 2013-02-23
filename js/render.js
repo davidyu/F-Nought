@@ -129,14 +129,16 @@ var Render = {
 
         var n, segment;
 
+        var drawDistance = Settings.drawDistance;
+
         for(n = 0 ; n < drawDistance ; n++) {
 
-            segment        = segments[(baseSegment.index + n) % segments.length];
+            segment        = Settings.segments[(baseSegment.index + n) % Settings.segments.length];
             segment.looped = segment.index < baseSegment.index;
-            segment.fog    = Util.exponentialFog(n/drawDistance, fogDensity);
+            segment.fog    = Util.exponentialFog(n/drawDistance, Settings.fogDensity);
 
-            Util.project(segment.p1, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
-            Util.project(segment.p2, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+            Util.project( segment.p1, ( Settings.playerX * Settings.roadWidth), Settings.cameraHeight, Settings.position - (segment.looped ? trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
+            Util.project( segment.p2, ( Settings.playerX * Settings.roadWidth), Settings.cameraHeight, Settings.position - (segment.looped ? trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
 
             if ((segment.p1.camera.z <= cameraDepth) || // behind us
                 (segment.p2.screen.y >= maxy))          // clip by (already rendered) segment

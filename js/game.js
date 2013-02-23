@@ -4,7 +4,13 @@
 var Game = {
     run : function( options ) {
         Game.loadImages( options.images, function( images ) {
-            var update = options.update,
+
+            options.ready(images);
+
+            Game.setKeyListener(options.keys);
+
+            var canvas = options.canvas,
+                update = options.update,
                 render = options.render,
                 step   = options.step,
                 now    = null,
@@ -178,25 +184,9 @@ var Settings = {
         this.keySlower     = false;
     },
 
-    reset: function( options ) {
-      options       = options || {};
-      canvas.width  = width  = Util.toInt(options.width,          width);
-      canvas.height = height = Util.toInt(options.height,         height);
-      lanes                  = Util.toInt(options.lanes,          lanes);
-      roadWidth              = Util.toInt(options.roadWidth,      roadWidth);
-      cameraHeight           = Util.toInt(options.cameraHeight,   cameraHeight);
-      drawDistance           = Util.toInt(options.drawDistance,   drawDistance);
-      fogDensity             = Util.toInt(options.fogDensity,     fogDensity);
-      fieldOfView            = Util.toInt(options.fieldOfView,    fieldOfView);
-      segmentLength          = Util.toInt(options.segmentLength,  segmentLength);
-      rumbleLength           = Util.toInt(options.rumbleLength,   rumbleLength);
-      cameraDepth            = 1 / Math.tan((fieldOfView/2) * Math.PI/180);
-      playerZ                = (cameraHeight * cameraDepth);
-      resolution             = height/480;
-      refreshTweakUI();
 
-      if ((segments.length==0) || (options.segmentLength) || (options.rumbleLength))
-        resetRoad(); // only rebuild road when necessary
+    findSegment: function( z ) {
+        return this.segments[ Math.floor( z/this.segmentLength ) % this.segments.length ];
     },
 
     resetRoad: function() {
@@ -206,20 +196,36 @@ var Settings = {
                 index: n,
                 p1: { world: { z:  n   * this.segmentLength }, camera: {}, screen: {} },
                 p2: { world: { z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
-                color: Math.floor( n/rumbleLength ) % 2 ? COLORS.DARK : COLORS.LIGHT
+                color: Math.floor( n/ this.rumbleLength ) % 2 ? COLORS.DARK : COLORS.LIGHT
             } );
         }
 
-        this.segments[ findSegment(playerZ).index + 2 ].color = COLORS.START;
-        this.segments[ findSegment(playerZ).index + 3 ].color = COLORS.START;
-        for(var n = 0 ; n < rumbleLength ; n++)
-            this.segments[segments.length-1-n].color = COLORS.FINISH;
+        this.segments[ this.findSegment( this.playerZ ).index + 2 ].color = COLORS.START;
+        this.segments[ this.findSegment( this.playerZ ).index + 3 ].color = COLORS.START;
+        for(var n = 0 ; n < this.rumbleLength; n++)
+            this.segments[ this.segments.length - 1 - n ].color = COLORS.FINISH;
 
         trackLength = this.segments.length * this.segmentLength;
     },
 
-    findSegment: function( z ) {
-        return this.segments[ Math.floor( z/this.segmentLength ) % this.segments.length ];
+    reset: function( options ) {
+      options       = options || {};
+      this.canvas.width  = this.width  = Util.toInt(options.width,     this.width);
+      this.canvas.height = this.height = Util.toInt(options.height,    this.height);
+      this.lanes                  = Util.toInt(options.lanes,          this.lanes);
+      this.roadWidth              = Util.toInt(options.roadWidth,      this.roadWidth);
+      this.cameraHeight           = Util.toInt(options.cameraHeight,   this.cameraHeight);
+      this.drawDistance           = Util.toInt(options.drawDistance,   this.drawDistance);
+      this.fogDensity             = Util.toInt(options.fogDensity,     this.fogDensity);
+      this.fieldOfView            = Util.toInt(options.fieldOfView,    this.fieldOfView);
+      this.segmentLength          = Util.toInt(options.segmentLength,  this.segmentLength);
+      this.rumbleLength           = Util.toInt(options.rumbleLength,   this.rumbleLength);
+      this.cameraDepth            = 1 / Math.tan( ( this.fieldOfView / 2 ) * Math.PI / 180);
+      this.playerZ                = ( this.cameraHeight * this.cameraDepth );
+      this.resolution             = this.height / 480;
+
+      if (( this.segments.length==0) || (options.segmentLength) || (options.rumbleLength))
+        this.resetRoad(); // only rebuild road when necessary
     }
 
 }
