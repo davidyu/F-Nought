@@ -220,14 +220,19 @@ var Settings = {
 
     resetRoad: function() {
         this.segments = [];
-        for(var n = 0 ; n < 500 ; n++) {
-            this.segments.push( {
-                index: n,
-                p1: { world: { z:  n   * this.segmentLength }, camera: {}, screen: {} },
-                p2: { world: { z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
-                color: Math.floor( n/ this.rumbleLength ) % 2 ? COLORS.DARK : COLORS.LIGHT
-            } );
-        }
+
+        this.addStraight( ROAD.LENGTH.SHORT/4 );
+        this.addSCurves();
+        this.addStraight( ROAD.LENGTH.LONG );
+        this.addCurve( ROAD.LENGTH.MEDIUM, ROAD.CURVE.MEDIUM );
+        this.addCurve( ROAD.LENGTH.LONG, ROAD.CURVE.MEDIUM );
+        this.addStraight();
+        this.addSCurves();
+        this.addCurve( ROAD.LENGTH.LONG, -ROAD.CURVE.MEDIUM );
+        this.addCurve( ROAD.LENGTH.LONG, ROAD.CURVE.MEDIUM );
+        this.addStraight();
+        this.addSCurves();
+        this.addCurve( ROAD.LENGTH.LONG, -ROAD.CURVE.EASY );
 
         this.segments[ this.findSegment( this.playerZ ).index + 2 ].color = COLORS.START;
         this.segments[ this.findSegment( this.playerZ ).index + 3 ].color = COLORS.START;
@@ -253,8 +258,53 @@ var Settings = {
       this.playerZ                = ( this.cameraHeight * this.cameraDepth );
       this.resolution             = this.height / 480;
 
-      if (( this.segments.length==0) || (options.segmentLength) || (options.rumbleLength))
+      if (( this.segments.length == 0) || (options.segmentLength) || (options.rumbleLength))
         this.resetRoad(); // only rebuild road when necessary
+    },
+
+    addSegment: function( curve ) {
+        var n = this.segments.length;
+        this.segments.push( { index: n,
+                              p1: { world: { z:  n   * this.segmentLength }, camera: {}, screen: {} },
+                              p2: { world: { z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
+                              curve: curve,
+                              color: Math.floor( n / this.rumbleLength)%2 ? COLORS.DARK : COLORS.LIGHT
+                          } );
+    },
+
+    addRoad: function( enter, hold, leave, curve ) {
+        var n;
+        for( n = 0 ; n < enter ; n++ ) {
+            this.addSegment( Util.easeIn( 0, curve, n/enter ) );
+        }
+
+        for( n = 0 ; n < hold  ; n++ ) {
+            this.addSegment( curve );
+        }
+
+        for( n = 0 ; n < leave ; n++ ) {
+            this.addSegment( Util.easeInOut( curve, 0, n/leave ) );
+        }
+    },
+
+    addStraight: function( num ) {
+        num = num || ROAD.LENGTH.MEDIUM;
+        this.addRoad( num, num, num, 0 );
+    },
+
+    addCurve: function( num, curve ) {
+        num    = num    || ROAD.LENGTH.MEDIUM;
+        curve  = curve  || ROAD.CURVE.MEDIUM;
+        this.addRoad( num, num, num, curve );
+    },
+
+    addSCurves: function() {
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.EASY );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,   ROAD.CURVE.MEDIUM );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,   ROAD.CURVE.EASY );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.EASY );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.MEDIUM );
     }
+
 
 }

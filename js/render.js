@@ -117,15 +117,19 @@ var Render = {
     render: function( position ) {
 
         var baseSegment = Settings.findSegment( position );
+        var basePercent = Util.percentRemaining(position, Settings.segmentLength);
         var maxy        = Settings.height;
+
+        var x  = 0;
+        var dx = - (baseSegment.curve * basePercent);
 
         var ctx = Settings.ctx;
 
         ctx.clearRect(0, 0, Settings.width, Settings.height);
 
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.SKY);
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.HILLS);
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.TREES);
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.SKY,    Settings.skyOffset );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.HILLS,  Settings.hillOffset );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.TREES,  Settings.treeOffset );
 
         var n, segment;
 
@@ -133,12 +137,15 @@ var Render = {
 
         for(n = 0 ; n < drawDistance ; n++) {
 
-            segment        = Settings.segments[(baseSegment.index + n) % Settings.segments.length];
+            segment        = Settings.segments[ ( baseSegment.index + n ) % Settings.segments.length];
             segment.looped = segment.index < baseSegment.index;
-            segment.fog    = Util.exponentialFog(n/drawDistance, Settings.fogDensity);
+            segment.fog    = Util.exponentialFog( n / drawDistance, Settings.fogDensity );
 
             Util.project( segment.p1, ( Settings.playerX * Settings.roadWidth), Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
             Util.project( segment.p2, ( Settings.playerX * Settings.roadWidth), Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
+
+            x  += dx;
+            dx += segment.curve;
 
             if ((segment.p1.camera.z <= Settings.cameraDepth) || // behind us
                 (segment.p2.screen.y >= maxy))          // clip by (already rendered) segment
