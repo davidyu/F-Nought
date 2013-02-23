@@ -116,9 +116,12 @@ var Render = {
 
     render: function( position ) {
 
-        var baseSegment = Settings.findSegment( position );
-        var basePercent = Util.percentRemaining(position, Settings.segmentLength);
-        var maxy        = Settings.height;
+        var baseSegment   = Settings.findSegment( position );
+        var basePercent   = Util.percentRemaining( position, Settings.segmentLength );
+        var playerSegment = Settings.findSegment( position + Settings.playerZ );
+        var playerPercent = Util.percentRemaining( position + Settings.playerZ, Settings.segmentLength );
+        var playerY       = Util.interpolate( playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent );
+        var maxy          = Settings.height;
 
         var x  = 0;
         var dx = - (baseSegment.curve * basePercent);
@@ -127,9 +130,9 @@ var Render = {
 
         ctx.clearRect(0, 0, Settings.width, Settings.height);
 
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.SKY,    Settings.skyOffset );
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.HILLS,  Settings.hillOffset );
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.TREES,  Settings.treeOffset );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.SKY,    Settings.skyOffset,  Settings.resolution * playerY );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.HILLS,  Settings.hillOffset, Settings.resolution * playerY );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.TREES,  Settings.treeOffset, Settings.resolution * playerY );
 
         var n, segment;
 
@@ -141,14 +144,14 @@ var Render = {
             segment.looped = segment.index < baseSegment.index;
             segment.fog    = Util.exponentialFog( n / drawDistance, Settings.fogDensity );
 
-            Util.project( segment.p1, ( Settings.playerX * Settings.roadWidth) - x, Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
-            Util.project( segment.p2, ( Settings.playerX * Settings.roadWidth) - x - dx, Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
-
+            Util.project( segment.p1, ( Settings.playerX * Settings.roadWidth) - x,      playerY + Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth );
+            Util.project( segment.p2, ( Settings.playerX * Settings.roadWidth) - x - dx, playerY + Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth );
 
             x  += dx;
             dx += segment.curve;
 
             if ((segment.p1.camera.z <= Settings.cameraDepth) || // behind us
+                (segment.p2.screen.y >= segment.p1.screen.y) || // back face cull
                 (segment.p2.screen.y >= maxy))          // clip by (already rendered) segment
                 continue;
 
@@ -160,17 +163,17 @@ var Render = {
                            segment.p2.screen.y,
                            segment.p2.screen.w,
                            segment.fog,
-                           segment.color);
+                           segment.color );
 
             maxy = segment.p2.screen.y;
         }
 
         Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
-                       Settings.cameraDepth/(Settings.playerZ*2),
-                       Settings.width/2,
-                       Settings.height,
+                       Settings.cameraDepth/(Settings.playerZ),
+                       Settings.width / 2,
+                       ( Settings.height / 2 ) - ( Settings.cameraDepth / Settings.playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
                        Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),
-                       0 );
+                       playerSegment.p2.world.y - playerSegment.p1.world.y );
     },
 
     rumbleWidth:     function( projectedRoadWidth, lanes ) { return projectedRoadWidth/Math.max(6,  2*lanes); },

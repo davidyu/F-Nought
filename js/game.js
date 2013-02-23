@@ -69,7 +69,6 @@ var Game = {
         Settings.hillOffset = Util.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
         Settings.treeOffset = Util.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
 
-
         if ( Settings.keyLeft )
             Settings.playerX -= dx;
         else if ( Settings.keyRight )
@@ -218,10 +217,16 @@ var Settings = {
         return this.segments[ Math.floor( z/this.segmentLength ) % this.segments.length ];
     },
 
+    lastY: function() {
+        return ( this.segments.length == 0 ) ? 0 : this.segments[ this.segments.length - 1 ].p2.world.y;
+    },
+
     resetRoad: function() {
         this.segments = [];
 
         this.addStraight( ROAD.LENGTH.SHORT/4 );
+        this.addHill(ROAD.LENGTH.SHORT, ROAD.HILL.LOW);
+        this.addLowRollingHills();
         this.addSCurves();
         this.addStraight( ROAD.LENGTH.LONG );
         this.addCurve( ROAD.LENGTH.MEDIUM, ROAD.CURVE.MEDIUM );
@@ -262,34 +267,54 @@ var Settings = {
         this.resetRoad(); // only rebuild road when necessary
     },
 
-    addSegment: function( curve ) {
+    addSegment: function( curve, height ) {
         var n = this.segments.length;
         this.segments.push( { index: n,
-                              p1: { world: { z:  n   * this.segmentLength }, camera: {}, screen: {} },
-                              p2: { world: { z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
+                              p1: { world: { y: this.lastY(), z:  n   * this.segmentLength }, camera: {}, screen: {} },
+                              p2: { world: { y: height,       z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
                               curve: curve,
-                              color: Math.floor( n / this.rumbleLength)%2 ? COLORS.DARK : COLORS.LIGHT
+                              color: Math.floor( n / this.rumbleLength) % 2 ? COLORS.DARK : COLORS.LIGHT
                           } );
     },
 
-    addRoad: function( enter, hold, leave, curve ) {
-        var n;
+    addRoad: function( enter, hold, leave, curve, height ) {
+        var startY   = this.lastY();
+        var endY     = startY + ( Util.toInt( height, 0 ) * this.segmentLength );
+        var n, total = enter + hold + leave;
+
         for( n = 0 ; n < enter ; n++ ) {
-            this.addSegment( Util.easeIn( 0, curve, n/enter ) );
+            this.addSegment( Util.easeIn( 0, curve, n/enter ), Util.easeInOut( startY, endY, n / total ) );
         }
 
         for( n = 0 ; n < hold  ; n++ ) {
-            this.addSegment( curve );
+            this.addSegment( curve, Util.easeInOut( startY, endY, ( enter * n ) / total ) );
         }
 
         for( n = 0 ; n < leave ; n++ ) {
-            this.addSegment( Util.easeInOut( curve, 0, n/leave ) );
+            this.addSegment( Util.easeInOut( curve, 0, n/leave ), Util.easeInOut( startY, endY, ( enter + hold + n ) / total ) );
         }
     },
 
     addStraight: function( num ) {
         num = num || ROAD.LENGTH.MEDIUM;
         this.addRoad( num, num, num, 0 );
+    },
+
+    addHill: function( num, height ) {
+        num    = num    || ROAD.LENGTH.MEDIUM;
+        height = height || ROAD.HILL.MEDIUM;
+        this.addRoad( num, num, num, 0, height);
+    },
+
+    addLowRollingHills: function( num, height ) {
+        num    = num    || ROAD.LENGTH.SHORT;
+        height = height || ROAD.HILL.LOW;
+        this.addRoad(num, num, num,  0,  height/2);
+        this.addRoad(num, num, num,  0, -height);
+        this.addRoad(num, num, num,  0,  height);
+        this.addRoad(num, num, num,  0,  0);
+        this.addRoad(num, num, num,  0,  height/2);
+        this.addRoad(num, num, num,  0,  0);
     },
 
     addCurve: function( num, curve ) {
@@ -299,12 +324,18 @@ var Settings = {
     },
 
     addSCurves: function() {
-        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.EASY );
-        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,   ROAD.CURVE.MEDIUM );
-        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,   ROAD.CURVE.EASY );
-        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.EASY );
-        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.MEDIUM );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.EASY,     ROAD.HILL.NONE   );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,   ROAD.CURVE.MEDIUM,   ROAD.HILL.MEDIUM );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,   ROAD.CURVE.EASY,    -ROAD.HILL.LOW    );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.EASY,     ROAD.HILL.MEDIUM );
+        this.addRoad( ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM,  -ROAD.CURVE.MEDIUM,  -ROAD.HILL.MEDIUM );
+    },
+
+    addDownhillToEnd: function( num ) {
+        num = num || 200;
+        this.addRoad( num, num, num, -ROAD.CURVE.EASY, -this.lastY() / this.segmentLength );
     }
+
 
 
 }
