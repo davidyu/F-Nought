@@ -13,12 +13,12 @@ var Render = {
 
     //---------------------------------------------------------------------------
 
-    segment: function(ctx, width, lanes, x1, y1, w1, x2, y2, w2, fog, color) {
+    segment: function( ctx, width, lanes, x1, y1, w1, x2, y2, w2, fog, color ) {
 
-        var r1 = Render.rumbleWidth(w1, lanes),
-            r2 = Render.rumbleWidth(w2, lanes),
-            l1 = Render.laneMarkerWidth(w1, lanes),
-            l2 = Render.laneMarkerWidth(w2, lanes),
+        var r1 = Render.rumbleWidth( w1, lanes ),
+            r2 = Render.rumbleWidth( w2, lanes ),
+            l1 = Render.laneMarkerWidth( w1, lanes ),
+            l2 = Render.laneMarkerWidth( w2, lanes ),
             lanew1, lanew2, lanex1, lanex2, lane;
 
         ctx.fillStyle = color.grass;
@@ -42,7 +42,7 @@ var Render = {
 
     //---------------------------------------------------------------------------
 
-    background: function(ctx, background, width, height, layer, rotation, offset) {
+    background: function( ctx, background, width, height, layer, rotation, offset ) {
 
         rotation = rotation || 0;
         offset   = offset   || 0;

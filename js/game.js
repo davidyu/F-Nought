@@ -109,7 +109,7 @@ var Game = {
 var Settings = {
 
     fps           : 60,                      // how many 'update' frames per second
-    step          : 1/this.fps,                   // how long is each frame (in seconds)
+    step          : 1/this.fps,              // how long is each frame (in seconds)
     width         : 1024,                    // logical canvas width
     height        : 768,                     // logical canvas height
     segments      : [],                      // array of road segments
@@ -133,7 +133,7 @@ var Settings = {
     position      : 0,                       // current camera Z position (add playerZ to get player's absolute Z position)
     speed         : 0,                       // current speed
     maxSpeed      : this.segmentLength/this.step,      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
-    accel         :  this.maxSpeed/5,             // acceleration rate - tuned until it 'felt' right
+    accel         :  this.maxSpeed/5,        // acceleration rate - tuned until it 'felt' right
     breaking      : -this.maxSpeed,               // deceleration rate when braking
     decel         : -this.maxSpeed/5,             // 'natural' deceleration rate when neither accelerating, nor braking
     offRoadDecel  : -this.maxSpeed/2,             // off road deceleration is somewhere in between
