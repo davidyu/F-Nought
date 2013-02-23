@@ -42,7 +42,7 @@ var Render = {
 
     //---------------------------------------------------------------------------
 
-    background: function( ctx, background, width, height, layer, rotation, offset ) {
+    background: function( ctx, background, width, height, layer, rotation, offset  ) {
 
         rotation = rotation || 0;
         offset   = offset   || 0;
@@ -114,16 +114,18 @@ var Render = {
 
     //the big show
 
-    render: function() {
+    render: function( position ) {
 
-        var baseSegment = findSegment(position);
-        var maxy        = height;
+        var baseSegment = Settings.findSegment( position );
+        var maxy        = Settings.height;
 
-        ctx.clearRect(0, 0, width, height);
+        var ctx = Settings.ctx;
 
-        Render.background(ctx, background, width, height, BACKGROUND.SKY);
-        Render.background(ctx, background, width, height, BACKGROUND.HILLS);
-        Render.background(ctx, background, width, height, BACKGROUND.TREES);
+        ctx.clearRect(0, 0, Settings.width, Settings.height);
+
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.SKY);
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.HILLS);
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.TREES);
 
         var n, segment;
 
@@ -153,11 +155,11 @@ var Render = {
             maxy = segment.p2.screen.y;
         }
 
-        Render.player( ctx, width, height, resolution, roadWidth, sprites, speed/maxSpeed,
-                       cameraDepth/playerZ,
-                       width/2,
-                       height,
-                       speed * ( keyLeft ? -1 : keyRight ? 1 : 0 ),
+        Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
+                       Settings.cameraDepth/Settings.playerZ,
+                       Settings.width/2,
+                       Settings.height,
+                       Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),
                        0 );
     },
 

@@ -20,7 +20,7 @@ var Game = {
                     gdt -= step;
                     update( step );
                 }
-                render();
+                render( Settings.position );
                 last = now;
                 requestAnimationFrame( frame );
             }(); //self-execute frame
@@ -200,26 +200,26 @@ var Settings = {
     },
 
     resetRoad: function() {
-        segments = [];
+        this.segments = [];
         for(var n = 0 ; n < 500 ; n++) {
-            segments.push( {
+            this.segments.push( {
                 index: n,
-                p1: { world: { z:  n   *segmentLength }, camera: {}, screen: {} },
-                p2: { world: { z: (n+1)*segmentLength }, camera: {}, screen: {} },
+                p1: { world: { z:  n   * this.segmentLength }, camera: {}, screen: {} },
+                p2: { world: { z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
                 color: Math.floor( n/rumbleLength ) % 2 ? COLORS.DARK : COLORS.LIGHT
             } );
         }
 
-        segments[findSegment(playerZ).index + 2].color = COLORS.START;
-        segments[findSegment(playerZ).index + 3].color = COLORS.START;
+        this.segments[ findSegment(playerZ).index + 2 ].color = COLORS.START;
+        this.segments[ findSegment(playerZ).index + 3 ].color = COLORS.START;
         for(var n = 0 ; n < rumbleLength ; n++)
-            segments[segments.length-1-n].color = COLORS.FINISH;
+            this.segments[segments.length-1-n].color = COLORS.FINISH;
 
-        trackLength = segments.length * segmentLength;
+        trackLength = this.segments.length * this.segmentLength;
     },
 
     findSegment: function( z ) {
-        return segments[ Math.floor( z/segmentLength ) % segments.length ];
+        return this.segments[ Math.floor( z/this.segmentLength ) % this.segments.length ];
     }
 
 }
