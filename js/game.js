@@ -26,9 +26,12 @@ var Game = {
                     gdt -= step;
                     update( step );
                 }
-                render( Settings.position );
+                
                 last = now;
+                render( Settings.position );
                 requestAnimationFrame( frame, canvas );
+
+                
             }
 
             frame();
@@ -56,27 +59,27 @@ var Game = {
 
     update: function( dt ) {
 
-        position = Util.increase( position, dt * speed, trackLength );
+        Settings.position = Util.increase( Settings.position, dt * Settings.speed, Settings.trackLength );
 
-        var dx = dt * 2 * ( speed/maxSpeed ); // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+        var dx = dt * 2 * ( Settings.speed/Settings.maxSpeed ); // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
-        if ( keyLeft )
-            playerX = playerX - dx;
-        else if ( keyRight )
-            playerX = playerX + dx;
+        if ( Settings.keyLeft )
+            Settings.playerX -= dx;
+        else if ( Settings.keyRight )
+            Settings.playerX += dx;
 
-        if ( keyFaster )
-            speed = Util.accelerate( speed, accel, dt );
-        else if ( keySlower )
-            speed = Util.accelerate( speed, breaking, dt );
+        if ( Settings.keyFaster )
+            Settings.speed = Util.accelerate( Settings.speed, Settings.accel, dt );
+        else if ( Settings.keySlower )
+            Settings.speed = Util.accelerate( Settings.speed, Settings.breaking, dt );
         else
-            speed = Util.accelerate( speed, decel, dt );
+            Settings.speed = Util.accelerate( Settings.speed, Settings.decel, dt );
 
-        if ( ( ( playerX < -1 ) || ( playerX > 1 ) ) && ( speed > offRoadLimit ) )
-            speed = Util.accelerate( speed, offRoadDecel, dt );
+        if ( ( ( Settings.playerX < -1 ) || ( Settings.playerX > 1 ) ) && ( Settings.speed > Settings.offRoadLimit ) )
+            Settings.speed = Util.accelerate( Settings.speed, Settings.offRoadDecel, dt );
 
-        playerX = Util.limit( playerX, -2, 2 );     // dont ever let player go too far out of bounds
-        speed   = Util.limit( speed, 0, maxSpeed ); // or exceed maxSpeed
+        Settings.playerX = Util.limit( Settings.playerX, -2, 2 );     // dont ever let player go too far out of bounds
+        Settings.speed   = Util.limit( Settings.speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
 
     },
 
@@ -84,7 +87,6 @@ var Game = {
         var onkey = function( keyCode, mode ) {
             var n, k;
 
-            //Dave: will this for-loop be called EVERY time a key is pressed? Seems inefficient.
             for( n = 0 ; n < keys.length ; n++ ) {
                 k = keys[n];
                 k.mode = k.mode || 'up';
@@ -207,7 +209,7 @@ var Settings = {
         for(var n = 0 ; n < this.rumbleLength; n++)
             this.segments[ this.segments.length - 1 - n ].color = COLORS.FINISH;
 
-        trackLength = this.segments.length * this.segmentLength;
+        this.trackLength = this.segments.length * this.segmentLength;
     },
 
     reset: function( options ) {
