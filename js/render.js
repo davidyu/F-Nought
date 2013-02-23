@@ -145,6 +145,7 @@ var Render = {
             segment        = Settings.segments[ ( baseSegment.index + n ) % Settings.segments.length];
             segment.looped = segment.index < baseSegment.index;
             segment.fog    = Util.exponentialFog( n / drawDistance, Settings.fogDensity );
+            segment.clip   = maxy;
 
             Util.project( segment.p1, ( Settings.playerX * Settings.roadWidth) - x,      playerY + Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth );
             Util.project( segment.p2, ( Settings.playerX * Settings.roadWidth) - x - dx, playerY + Settings.cameraHeight, Settings.position - (segment.looped ? Settings.trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth );
@@ -177,9 +178,9 @@ var Render = {
             for(i = 0 ; i < segment.sprites.length ; i++) {
                 sprite      = segment.sprites[i];
                 spriteScale = segment.p1.screen.scale;
-                spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * roadWidth * width/2);
+                spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * Settings.roadWidth * Settings.width/2);
                 spriteY     = segment.p1.screen.y;
-                Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
+                Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, sprite.source, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
             }
 
             // render other cars
@@ -187,18 +188,21 @@ var Render = {
                 car         = segment.cars[i];
                 sprite      = car.sprite;
                 spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent);
-                spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * roadWidth * width/2);
+                spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * Settings.roadWidth * Settings.width/2);
                 spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
-                Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, sprites, car.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+                Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, car.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+            }
+
+            if ( segment == playerSegment ) {
+                Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
+                               Settings.cameraDepth/(Settings.playerZ),
+                               Settings.width / 2,
+                               ( Settings.height / 2 ) - ( Settings.cameraDepth / Settings.playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
+                               Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),
+                               playerSegment.p2.world.y - playerSegment.p1.world.y );                
             }
         }
 
-        Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
-                       Settings.cameraDepth/(Settings.playerZ*2),
-                       Settings.width / 2,
-                       ( Settings.height / 2 ) - ( Settings.cameraDepth / Settings.playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
-                       Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),
-                       playerSegment.p2.world.y - playerSegment.p1.world.y );
     },
 
     rumbleWidth:     function( projectedRoadWidth, lanes ) { return projectedRoadWidth/Math.max(6,  2*lanes); },
