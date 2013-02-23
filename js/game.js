@@ -28,8 +28,10 @@ var Game = {
                 }
                 render( Settings.position );
                 last = now;
-                requestAnimationFrame( frame );
-            }(); //self-execute frame
+                requestAnimationFrame( frame, canvas );
+            }
+
+            frame();
         } );
     },
 

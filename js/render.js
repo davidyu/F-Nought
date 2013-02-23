@@ -140,11 +140,11 @@ var Render = {
             Util.project( segment.p1, ( Settings.playerX * Settings.roadWidth), Settings.cameraHeight, Settings.position - (segment.looped ? trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
             Util.project( segment.p2, ( Settings.playerX * Settings.roadWidth), Settings.cameraHeight, Settings.position - (segment.looped ? trackLength : 0), Settings.cameraDepth, Settings.width, Settings.height, Settings.roadWidth);
 
-            if ((segment.p1.camera.z <= cameraDepth) || // behind us
+            if ((segment.p1.camera.z <= Settings.cameraDepth) || // behind us
                 (segment.p2.screen.y >= maxy))          // clip by (already rendered) segment
                 continue;
 
-            Render.segment(ctx, width, lanes,
+            Render.segment(ctx, Settings.width, Settings.lanes,
                            segment.p1.screen.x,
                            segment.p1.screen.y,
                            segment.p1.screen.w,
