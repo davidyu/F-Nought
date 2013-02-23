@@ -25,6 +25,11 @@ var BACKGROUND = {
     TREES: { x:   5, y: 985, w: 1280, h: 480 }
 };
 
+var ROAD = {
+  LENGTH: { NONE: 0, SHORT:  25, MEDIUM:  50, LONG:  100 }, // num segments
+  CURVE:  { NONE: 0, EASY:    2, MEDIUM:   4, HARD:    6 }
+};
+
 var SPRITES = {
     PALM_TREE:              { x:    5, y:    5, w:  215, h:  540 },
     BILLBOARD08:            { x:  230, y:    5, w:  385, h:  265 },

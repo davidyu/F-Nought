@@ -59,14 +59,23 @@ var Game = {
 
     update: function( dt ) {
 
-        Settings.position = Util.increase( Settings.position, dt * Settings.speed, Settings.trackLength );
+        var playerSegment = Settings.findSegment( Settings.position + Settings.playerZ );
+        var speedPercent  = Settings.speed/Settings.maxSpeed;
+        var dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
-        var dx = dt * 2 * ( Settings.speed/Settings.maxSpeed ); // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+        Settings.position = Util.increase( Settings.position, dt * Settings.speed, Settings.trackLength );        
+
+        Settings.skyOffset  = Util.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
+        Settings.hillOffset = Util.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
+        Settings.treeOffset = Util.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
+
 
         if ( Settings.keyLeft )
             Settings.playerX -= dx;
         else if ( Settings.keyRight )
             Settings.playerX += dx;
+
+        Settings.playerX -= (dx * speedPercent * playerSegment.curve * Settings.centrifugal);
 
         if ( Settings.keyFaster )
             Settings.speed = Util.accelerate( Settings.speed, Settings.accel, dt );
@@ -122,6 +131,14 @@ var Settings = {
     step          : 1/60,                    // how long is each frame (in seconds)
     width         : 1024,                    // logical canvas width
     height        : 768,                     // logical canvas height
+    centrifugal   : 0.3,                     // centrifugal force multiplier when going around curves
+    offRoadDecel  : 0.99,                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
+    skySpeed      : 0.001,                   // background sky layer scroll speed when going around curve (or up hill)
+    hillSpeed     : 0.002,                   // background hill layer scroll speed when going around curve (or up hill)
+    treeSpeed     : 0.003,                   // background tree layer scroll speed when going around curve (or up hill
+    skyOffset     : 0,                       // current sky scroll offset
+    hillOffset    : 0,                       // current hill scroll offset
+    treeOffset    : 0,                       // current tree scroll offset
     segments      : [],                      // array of road segments
     canvas        : Dom.get('canvas'),       // our canvas...
     ctx           : this.canvas.getContext('2d'), // ...and its drawing context
@@ -155,6 +172,14 @@ var Settings = {
         this.step          = 1/this.fps;                   // how long is each frame (in seconds)
         this.width         = 1024;                    // logical canvas width
         this.height        = 768;                     // logical canvas height
+        this.centrifugal   = 0.3;                     // centrifugal force multiplier when going around curves
+        this.offRoadDecel  = 0.99;                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
+        this.skySpeed      = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)
+        this.hillSpeed     = 0.002;                   // background hill layer scroll speed when going around curve (or up hill)
+        this.treeSpeed     = 0.003;                   // background tree layer scroll speed when going around curve (or up hill
+        this.skyOffset     = 0;                       // current sky scroll offset
+        this.hillOffset    = 0;                       // current hill scroll offset
+        this.treeOffset    = 0;                       // current tree scroll offset
         this.segments      = [];                      // array of road segments
         this.canvas        = Dom.get('canvas');       // our canvas...
         this.ctx           = this.canvas.getContext('2d'); // ...and its drawing context
