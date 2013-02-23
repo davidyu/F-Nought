@@ -61,7 +61,10 @@ var Game = {
 
         var playerSegment = Settings.findSegment( Settings.position + Settings.playerZ );
         var speedPercent  = Settings.speed/Settings.maxSpeed;
+        var playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
         var dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+
+        this.updateCars(dt, playerSegment, playerW);
 
         Settings.position = Util.increase( Settings.position, dt * Settings.speed, Settings.trackLength );        
 
@@ -89,6 +92,75 @@ var Game = {
         Settings.playerX = Util.limit( Settings.playerX, -2, 2 );     // dont ever let player go too far out of bounds
         Settings.speed   = Util.limit( Settings.speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
 
+    },
+
+    updateCars: function( dt, playerSegment, playerW ) {
+        var n, car, oldSegment, newSegment;
+        for(n = 0 ; n < cars.length ; n++) {
+            car         = cars[n];
+            oldSegment  = Settings.findSegment(car.z);
+            car.offset  = car.offset + this.updateCarOffset(car, oldSegment, playerSegment, playerW);
+            car.z       = Util.increase(car.z, dt * car.speed, Settings.trackLength);
+            car.percent = Util.percentRemaining( car.z, Settings.segmentLength ); // useful for interpolation during rendering phase
+            newSegment  = Settings.findSegment( car.z );
+
+            if ( oldSegment != newSegment ) {
+                index = oldSegment.cars.indexOf( car );
+                oldSegment.cars.splice( index, 1 );
+                newSegment.cars.push( car );
+            }
+        }
+    },
+
+    updateCarOffset: function( car, carSegment, playerSegment, playerW ) {
+
+        var i, j, dir, segment, otherCar, otherCarW,
+            lookahead = 20,
+            carW = car.sprite.w * SPRITES.SCALE;
+
+        //don't steer/update AI cars if out of sight
+        if ( ( carSegment.index - playerSegment.index ) > drawDistance )
+            return 0;
+
+        for(i = 1 ; i < lookahead ; i++) {
+            segment = Settings.segments[ ( carSegment.index + i ) % Settings.segments.length ];
+
+            if (( segment === playerSegment ) && (car.speed > speed) && (Util.overlap(playerX, playerW, car.offset, carW, 1.2))) {
+
+                if (playerX > 0.5) {
+                    dir = -1;
+                } else if (playerX < -0.5) {
+                    dir = 1;
+                } else {
+                    dir = (car.offset > playerX) ? 1 : -1;
+                }
+
+                return dir * 1/i * (car.speed-speed)/maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
+            }
+
+            for( j = 0 ; j < segment.cars.length ; j++ ) {
+                otherCar  = segment.cars[j];
+                otherCarW = otherCar.sprite.w * SPRITES.SCALE;
+                if ( ( car.speed > otherCar.speed ) && Util.overlap( car.offset, carW, otherCar.offset, otherCarW, 1.2 ) ) {
+                    if ( otherCar.offset > 0.5 )
+                        dir = -1;
+                    else if ( otherCar.offset < -0.5 )
+                        dir = 1;
+                    else
+                        dir = ( car.offset > otherCar.offset ) ? 1 : -1;
+                    return dir * 1 / i * ( car.speed-otherCar.speed ) / maxSpeed;
+                }
+            }
+        }
+
+        // if no cars ahead, but I have somehow ended up off road, then steer back on
+        if (car.offset < -0.9) {
+            return 0.1;
+        } else if (car.offset > 0.9) {
+            return -0.1;
+        } else {
+            return 0;
+        }
     },
 
     setKeyListener: function( keys ) {
@@ -247,6 +319,14 @@ var Settings = {
         this.trackLength = this.segments.length * this.segmentLength;
     },
 
+    resetSprites: function() {
+        for( n = 250 ; n < 1000 ; n += 5 ) {
+            this.addSprite( n, SPRITES.COLUMN, 1.1);
+            this.addSprite( n + Util.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2) );
+            this.addSprite( n + Util.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2) );
+        }
+    },
+
     reset: function( options ) {
       options       = options || {};
       this.canvas.width  = this.width  = Util.toInt(options.width,     this.width);
@@ -273,9 +353,15 @@ var Settings = {
                               p1: { world: { y: this.lastY(), z:  n   * this.segmentLength }, camera: {}, screen: {} },
                               p2: { world: { y: y,            z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
                               curve: curve,
+                              sprites: [],
                               color: Math.floor( n / this.rumbleLength) % 2 ? COLORS.DARK : COLORS.LIGHT
                           } );
     },
+
+    addSprite: function( n, sprite, offset ) {
+        this.segments[n].sprites.push({ source: sprite, offset: offset });
+    },
+
 
     addRoad: function( enter, hold, leave, curve, y ) {
         var startY   = this.lastY();

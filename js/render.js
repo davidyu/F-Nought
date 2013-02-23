@@ -139,6 +139,7 @@ var Render = {
 
         var drawDistance = Settings.drawDistance;
 
+        //painter (front-to-back) for road segments
         for(n = 0 ; n < drawDistance ; n++) {
 
             segment        = Settings.segments[ ( baseSegment.index + n ) % Settings.segments.length];
@@ -167,6 +168,29 @@ var Render = {
                            segment.color );
 
             maxy = segment.p2.screen.y;
+        }
+
+        for(n = (drawDistance-1) ; n > 0 ; n--) {
+            segment = Settings.segments[(baseSegment.index + n) % Settings.segments.length];
+
+            // render roadside sprites
+            for(i = 0 ; i < segment.sprites.length ; i++) {
+                sprite      = segment.sprites[i];
+                spriteScale = segment.p1.screen.scale;
+                spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * roadWidth * width/2);
+                spriteY     = segment.p1.screen.y;
+                Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
+            }
+
+            // render other cars
+            for(i = 0 ; i < segment.cars.length ; i++) {
+                car         = segment.cars[i];
+                sprite      = car.sprite;
+                spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent);
+                spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * roadWidth * width/2);
+                spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
+                Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, sprites, car.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+            }
         }
 
         Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
