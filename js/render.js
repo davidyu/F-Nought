@@ -121,6 +121,7 @@ var Render = {
         var playerSegment = Settings.findSegment( position + Settings.playerZ );
         var playerPercent = Util.percentRemaining( position + Settings.playerZ, Settings.segmentLength );
         var playerY       = Util.interpolate( playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent );
+
         var maxy          = Settings.height;
 
         var x  = 0;
@@ -130,9 +131,9 @@ var Render = {
 
         ctx.clearRect(0, 0, Settings.width, Settings.height);
 
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.SKY,    Settings.skyOffset,  Settings.resolution * playerY );
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.HILLS,  Settings.hillOffset, Settings.resolution * playerY );
-        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.TREES,  Settings.treeOffset, Settings.resolution * playerY );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.SKY,    Settings.skyOffset,  Settings.resolution * Settings.skySpeed  * playerY );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.HILLS,  Settings.hillOffset, Settings.resolution * Settings.hillSpeed * playerY );
+        Render.background(ctx, Settings.background, Settings.width, Settings.height, BACKGROUND.TREES,  Settings.treeOffset, Settings.resolution * Settings.treeSpeed * playerY );
 
         var n, segment;
 
@@ -169,7 +170,7 @@ var Render = {
         }
 
         Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
-                       Settings.cameraDepth/(Settings.playerZ),
+                       Settings.cameraDepth/(Settings.playerZ*2),
                        Settings.width / 2,
                        ( Settings.height / 2 ) - ( Settings.cameraDepth / Settings.playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
                        Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),

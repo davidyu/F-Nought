@@ -267,19 +267,19 @@ var Settings = {
         this.resetRoad(); // only rebuild road when necessary
     },
 
-    addSegment: function( curve, height ) {
+    addSegment: function( curve, y ) {
         var n = this.segments.length;
         this.segments.push( { index: n,
                               p1: { world: { y: this.lastY(), z:  n   * this.segmentLength }, camera: {}, screen: {} },
-                              p2: { world: { y: height,       z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
+                              p2: { world: { y: y,            z: (n+1)* this.segmentLength }, camera: {}, screen: {} },
                               curve: curve,
                               color: Math.floor( n / this.rumbleLength) % 2 ? COLORS.DARK : COLORS.LIGHT
                           } );
     },
 
-    addRoad: function( enter, hold, leave, curve, height ) {
+    addRoad: function( enter, hold, leave, curve, y ) {
         var startY   = this.lastY();
-        var endY     = startY + ( Util.toInt( height, 0 ) * this.segmentLength );
+        var endY     = startY + ( Util.toInt( y, 0 ) * this.segmentLength );
         var n, total = enter + hold + leave;
 
         for( n = 0 ; n < enter ; n++ ) {
@@ -287,7 +287,7 @@ var Settings = {
         }
 
         for( n = 0 ; n < hold  ; n++ ) {
-            this.addSegment( curve, Util.easeInOut( startY, endY, ( enter * n ) / total ) );
+            this.addSegment( curve, Util.easeInOut( startY, endY, ( enter + n ) / total ) );
         }
 
         for( n = 0 ; n < leave ; n++ ) {
