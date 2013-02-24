@@ -1,5 +1,26 @@
 TODO BEFORE SATURDAY
 ====================
 
-Base game running with some curves.
-With F-Zero sprites.
+Base game running with some curves. DONE
+F-Zero sprites.
+Integrate sprites and other cars (DONE) but ISOLATE steering mechanism (NOT DONE).
+
+Simple Node.JS server that simulates code for ONE PLAYER.
+- isolate player state.
+
+Tasks
+
+Bridge server and client using socket.IO DONE
+Separate game update logic from rendering code DONE
+    Anything to do with DOM is rendering code YEAH
+Start running game simulation on server
+Implement single player networked game
+
+
+Extend to two players
+Extend to four players
+
+F-Zero sprites and Rakefiles
+Front-end design for client
+Synchronized game start and finish
+Game lobbies and menus
