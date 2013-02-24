@@ -2,7 +2,7 @@ var Client = {
     socket: null,
 
     init: function() {
-        this.socket = io.connect("http://localhost:8080");
+        this.socket = io.connect('http://localhost');
 
         this.socket.send( "inquire" ); //can i haz play
 

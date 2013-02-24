@@ -470,12 +470,12 @@ var Game = {
         if ( Settings.client ) {
             var speed = Settings.players[ Settings.me ].speed;
             var playerZ = Settings.players[ Settings.me ].Z;
-            var playerSegment = Settings.findSegment( position + playerZ );
-            var speedPercent  = speed/Settings.maxSpeed;
+            var playerSegment = Settings.findSegment( Settings.players[ Settings.me ].position + playerZ );
+            var speedPercent  = speed / Settings.maxSpeed;
             
-            Settings.skyOffset  = U.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
-            Settings.hillOffset = U.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
-            Settings.treeOffset = U.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
+            Settings.skyOffset  = U.increase( Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1 );
+            Settings.hillOffset = U.increase( Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1 );
+            Settings.treeOffset = U.increase( Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1 );
 
             for( n = 0 ; n < Settings.players.length ; n++ ) {
                 if ( !Settings.players[n] )
