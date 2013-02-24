@@ -176,8 +176,6 @@ var Render = {
         var speed = Settings.players[ Settings.me ].speed;
         var playerX = Settings.players[ Settings.me ].X;
 
-        //console.log( { playerZ: playerZ, speed: speed, playerX: playerX } );
-
         var baseSegment   = Settings.findSegment( position );
         var basePercent   = Util.percentRemaining( position, Settings.segmentLength );
         var playerSegment = Settings.findSegment( position + playerZ );
@@ -246,22 +244,48 @@ var Render = {
             }
 
             // render other cars
-            for(i = 0 ; i < segment.cars.length ; i++) {
-                car         = segment.cars[i];
-                sprite      = car.sprite;
-                spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent);
-                spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * Settings.roadWidth * Settings.width/2);
-                spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
-                Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, car.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+            for(i = 0 ; i < Settings.players.length ; i++) {
+
+                var car = Settings.players[i];
+
+                if ( !car || i == Settings.me ) {
+                    continue;
+                }
+
+                var otherPlayerSegment = Settings.findSegment( car.position + car.Z );
+
+                if ( otherPlayerSegment != segment ) {
+                    //don't need to render
+                    continue;
+                } else {
+
+                    var sprite;
+                    var updown = playerSegment.p2.world.y - playerSegment.p1.world.y,
+                        steer  = Settings.players[i].keyLeft ? -1 : Settings.players[i].keyRight ? 1 : 0;
+
+                    if (steer < 0) {
+                        sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT;
+                    } else if (steer > 0) {
+                        sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT;
+                    } else {
+                        sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT;
+                    }
+                    spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent);
+                    spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.X * Settings.roadWidth * Settings.width/2);
+                    spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
+
+                    Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+                }
+
             }
 
             if ( segment == playerSegment ) {
                 console.log( "rendering player sprite" );
                 Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, speed/Settings.maxSpeed,
-                               Settings.cameraDepth/(playerZ),
+                               Settings.cameraDepth/playerZ,
                                Settings.width / 2,
-                               ( Settings.height / 2 ) - ( Settings.cameraDepth / Settings.playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
-                               Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),
+                               ( Settings.height / 2 ) - ( Settings.cameraDepth / playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
+                               speed * ( Settings.players[ Settings.me ].keyLeft ? -1 : Settings.players[ Settings.me ].keyRight ? 1 : 0 ),
                                playerSegment.p2.world.y - playerSegment.p1.world.y );                
             }
         }

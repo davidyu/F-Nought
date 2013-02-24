@@ -7,13 +7,14 @@ var Client = {
         this.socket.send( "inquire" ); //can i haz play
 
         this.socket.on( "setup", function( data ) {
+
+            console.log( "connection established! I am " + data.d );
+
             Settings.me = parseInt( data.d );
 
             var me = Settings.me;
             Settings.init();
             Settings.addPlayer( me );
-
-            console.log( Settings.players[ me ] );
             
             Render.init();
 
@@ -43,10 +44,17 @@ var Client = {
 
         } );
 
-        this.socket.on( 'positionchange', function( data ) {
-            console.log( data );
+        //me
+        this.socket.on( 'positionverify', function( data ) {
+            Settings.players[ Settings.me ].position = data.position;
+        } );
 
-            Settings.position = data.position;
+        //other players
+        this.socket.on( 'positionchange', function( data ) {
+            Settings.players[ data.pid ].position = data.position;
+            Settings.players[ data.pid ].speed = data.speed;
+            Settings.players[ data.pid ].keyLeft = data.keyLeft;
+            Settings.players[ data.pid ].keyRight = data.keyRight;
         } );
 
         this.socket.on( 'message', function( message ) {

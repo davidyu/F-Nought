@@ -406,7 +406,7 @@ var Game = {
     },
 
     update: function( dt ) {
-        console.log( Settings.players );
+
         for( n = 0 ; n < Settings.players.length ; n++ ) {
             if ( !Settings.players[n] )
                 continue;
@@ -415,7 +415,7 @@ var Game = {
             var position = Settings.players[n].position;
 
             var playerZ = Settings.players[n].Z;
-            var playerSegment = Settings.findSegment( position + playerZ );
+            var playerSegment = Settings.findSegment( position + playerZ ); //need to check old and new playerSegments
             var speedPercent  = speed/Settings.maxSpeed;
             var playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
             var dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
@@ -427,7 +427,6 @@ var Game = {
 
             //only use key info if server or is client and me is n
             if ( !Settings.client ? n != Settings.me : n == Settings.me ) {
-                console.log( "updating my speed" );
                 if ( Settings.players[n].keyLeft )
                     Settings.players[n].X -= dx;
                 else if ( Settings.players[n].keyRight )
@@ -437,7 +436,6 @@ var Game = {
             Settings.players[n].X -= (dx * speedPercent * playerSegment.curve * Settings.centrifugal);
 
             if ( !Settings.client ? n != Settings.me : n == Settings.me ) {
-                console.log( "updating my speed" );
                 if ( Settings.players[n].keyFaster )
                     Settings.players[n].speed = U.accelerate( speed, Settings.accel, dt );
                 else if ( Settings.players[n].keySlower )
@@ -485,6 +483,12 @@ var Game = {
             Settings.skyOffset  = U.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
             Settings.hillOffset = U.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
             Settings.treeOffset = U.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
+
+            for( n = 0 ; n < Settings.players.length ; n++ ) {
+                if ( !Settings.players[n] )
+                    continue;
+                Settings.players[n].percent = U.percentRemaining( Settings.players[n].Z, Settings.segmentLength ); // useful for interpolation during rendering phase
+            }
         }
 
     },
