@@ -11,6 +11,8 @@ var Client = {
 
             Settings.init();
             Settings.addPlayer( Settings.me );
+
+            console.log( Settings.players[ Settings.me ] );
             
             Render.init();
 
@@ -56,10 +58,11 @@ var Client = {
     sendKeyState: function() {
 
         var msg = {
-            keySlower: Settings.keySlower,
-            keyFaster: Settings.keyFaster,
-            keyLeft:   Settings.keyLeft,
-            keyRight:  Settings.keyRight
+            pid : Settings.me,
+            keySlower: Settings.players[ Settings.me ].keySlower,
+            keyFaster: Settings.players[ Settings.me ].keyFaster,
+            keyLeft:   Settings.players[ Settings.me ].keyLeft,
+            keyRight:  Settings.players[ Settings.me ].keyRight
         }
 
         this.socket.emit( 'keystatechange', msg );

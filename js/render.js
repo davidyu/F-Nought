@@ -172,10 +172,10 @@ var Render = {
 
     render: function( position ) {
 
-        console.log( "rendering..." );
-
         var playerZ = Settings.players[ Settings.me ].Z;
         var playerX = Settings.players[ Settings.me ].X;
+
+        console.log( playerZ );
 
         var baseSegment   = Settings.findSegment( position );
         var basePercent   = Util.percentRemaining( position, Settings.segmentLength );
@@ -255,6 +255,7 @@ var Render = {
             }
 
             if ( segment == playerSegment ) {
+                console.log( "rendering player sprite" );
                 Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
                                Settings.cameraDepth/(Settings.playerZ),
                                Settings.width / 2,

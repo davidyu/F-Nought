@@ -99,12 +99,11 @@ var Settings = {
         this.keySlower     = false;
     },
 
-    //FOR SERVER USE ONLY
     addPlayer: function( i ) {
         this.players[i] = Player;
 
         //reset player i
-        this.players[i].X = 0;
+        this.players[i].X = 0; //this should change depending on the player
         this.players[i].Z = Settings.cameraHeight * Settings.cameraDepth;
         this.players[i].speed = 0;
         this.players[i].position = 0;
@@ -144,10 +143,12 @@ var Settings = {
         this.resetSprites();
         this.resetCars();
 
-        var playerZ = this.players[ this.me ].Z;
+        if ( this.client ) {
+            var playerZ = this.players[ this.me ].Z;
 
-        this.segments[ this.findSegment( playerZ ).index + 2 ].color = COLORS.START;
-        this.segments[ this.findSegment( playerZ ).index + 3 ].color = COLORS.START;
+            this.segments[ this.findSegment( playerZ ).index + 2 ].color = COLORS.START;
+            this.segments[ this.findSegment( playerZ ).index + 3 ].color = COLORS.START;
+        }
         for(var n = 0 ; n < this.rumbleLength; n++)
             this.segments[ this.segments.length - 1 - n ].color = COLORS.FINISH;
 
@@ -242,7 +243,6 @@ var Settings = {
         this.segmentLength          = U.toInt(options.segmentLength,  this.segmentLength);
         this.rumbleLength           = U.toInt(options.rumbleLength,   this.rumbleLength);
         this.cameraDepth            = 1 / Math.tan( ( this.fieldOfView / 2 ) * Math.PI / 180);
-        this.players[ this.me ].z   = ( this.cameraHeight * this.cameraDepth );
         this.resolution             = this.height / 480;
 
         if (( this.segments.length == 0) || (options.segmentLength) || (options.rumbleLength))
@@ -371,7 +371,6 @@ var Game = {
                 }
 
                 requestAnimationFrame( frame, canvas );
-
                 
             }
 
@@ -417,23 +416,29 @@ var Game = {
             var playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
             var dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
-            Game.updateCars( dt, playerSegment, playerW );
+            //disable AI cars for now
+            //Game.updateCars( dt, playerSegment, playerW );
 
             Settings.position = U.increase( Settings.position, dt * speed, Settings.trackLength );        
 
-            if ( Settings.keyLeft )
-                Settings.players[n].X -= dx;
-            else if ( Settings.keyRight )
-                Settings.players[n].X += dx;
+            //only use key info if server or is client and me is n
+            if ( !Settings.client ? n != Settings.me : n == Settings.me ) {
+                if ( Settings.keyLeft )
+                    Settings.players[n].X -= dx;
+                else if ( Settings.keyRight )
+                    Settings.players[n].X += dx;
+            }
 
             Settings.players[n].X -= (dx * speedPercent * playerSegment.curve * Settings.centrifugal);
 
-            if ( Settings.keyFaster )
-                Settings.players[n].speed = U.accelerate( speed, Settings.accel, dt );
-            else if ( Settings.keySlower )
-                Settings.players[n].speed = U.accelerate( speed, Settings.breaking, dt );
-            else
-                Settings.players[n].speed = U.accelerate( speed, Settings.decel, dt );
+            if ( !Settings.client ? n != Settings.me : n == Settings.me ) {
+                if ( Settings.keyFaster )
+                    Settings.players[n].speed = U.accelerate( speed, Settings.accel, dt );
+                else if ( Settings.keySlower )
+                    Settings.players[n].speed = U.accelerate( speed, Settings.breaking, dt );
+                else
+                    Settings.players[n].speed = U.accelerate( speed, Settings.decel, dt );
+            }
 
             speed = Settings.players[n].speed; //speed has been updated
 
@@ -444,6 +449,8 @@ var Game = {
 
             speed = Settings.players[n].speed; //speed has been updated
 
+            //disable player-ai collisions for now
+            /*
             for( n = 0 ; n < playerSegment.cars.length ; n++ ) {
                 car  = playerSegment.cars[n];
                 carW = car.sprite.w * SPRITES.SCALE;
@@ -455,16 +462,24 @@ var Game = {
                     }
                 }
             }
+            */
 
             speed = Settings.players[n].speed; //speed has been updated
 
+            Settings.players[n].X     = U.limit( playerX, -2, 2 );     // dont ever let player go too far out of bounds
+            Settings.players[n].speed = U.limit( speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
+        }
+
+        if ( Settings.client ) {
+            var speed = Settings.players[ Settings.me ].speed;
+            var playerZ = Settings.players[ Settings.me ].Z;
+            var playerSegment = Settings.findSegment( position + playerZ );
+            var speedPercent  = speed/Settings.maxSpeed;
+            
             Settings.skyOffset  = U.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
             Settings.hillOffset = U.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
             Settings.treeOffset = U.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
-
-            Settings.players[n].X     = U.limit( playerX, -2, 2 );     // dont ever let player go too far out of bounds
-            Settings.players[n].speed = U.limit( speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
-        }  
+        }
 
     },
 
