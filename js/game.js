@@ -1,6 +1,9 @@
 //mostly from http://codeincomplete.com/posts/2012/6/23/javascript_racer_v1_straight/
 //minor modifications mine
 
+var U = {};
+var R = {};
+
 var Settings = {
 
     client        : true,                    // are we the client?
@@ -158,22 +161,22 @@ var Settings = {
 
       for(n = 250 ; n < 2000 ; n += 10) {
         this.addSprite(n,     SPRITES.COLUMN, 1.1);
-        this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2));
-        this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2));
+        this.addSprite(n + U.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2));
+        this.addSprite(n + U.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2));
       }
 
       for(n = 200 ; n < segments.length ; n += 3) {
-        this.addSprite(n, Util.randomChoice(SPRITES.PLANTS), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
+        this.addSprite(n, U.randomChoice(SPRITES.PLANTS), U.randomChoice([1,-1]) * (2 + Math.random() * 5));
       }
 
       var side, sprite, offset;
       for(n = 1000 ; n < (segments.length-50) ; n += 100) {
-        side      = Util.randomChoice([1, -1]);
-        this.addSprite(n + Util.randomInt(0, 50), Util.randomChoice(SPRITES.BILLBOARDS), -side);
+        side      = U.randomChoice([1, -1]);
+        this.addSprite(n + U.randomInt(0, 50), U.randomChoice(SPRITES.BILLBOARDS), -side);
         for(i = 0 ; i < 20 ; i++) {
-          sprite = Util.randomChoice(SPRITES.PLANTS);
+          sprite = U.randomChoice(SPRITES.PLANTS);
           offset = side * (1.5 + Math.random());
-          this.addSprite(n + Util.randomInt(0, 50), sprite, offset);
+          this.addSprite(n + U.randomInt(0, 50), sprite, offset);
         }
           
       }
@@ -184,9 +187,9 @@ var Settings = {
         cars = [];
         var n, car, segment, offset, z, sprite, speed;
         for (var n = 0 ; n < this.totalCars ; n++) {
-            offset = Math.random() * Util.randomChoice([-0.8, 0.8]);
+            offset = Math.random() * U.randomChoice([-0.8, 0.8]);
             z      = Math.floor(Math.random() * this.segments.length) * this.segmentLength;
-            sprite = Util.randomChoice(SPRITES.CARS);
+            sprite = U.randomChoice(SPRITES.CARS);
             speed  = this.maxSpeed/4 + Math.random() * this.maxSpeed/(sprite == SPRITES.SEMI ? 4 : 2);
             car = { offset: offset, z: z, sprite: sprite, speed: speed };
             segment = this.findSegment( car.z );
@@ -198,8 +201,8 @@ var Settings = {
     resetSprites: function() {
         for( n = 250 ; n < 1000 ; n += 5 ) {
             this.addSprite( n, SPRITES.COLUMN, 1.1);
-            this.addSprite( n + Util.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2) );
-            this.addSprite( n + Util.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2) );
+            this.addSprite( n + U.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2) );
+            this.addSprite( n + U.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2) );
         }
     },
 
@@ -208,18 +211,18 @@ var Settings = {
         options = options || {};
 
         if ( this.client ) {
-            Render.canvas.width  = this.width  = Util.toInt(options.width,     Settings.width);
-            Render.canvas.height = this.height = Util.toInt(options.height,    Settings.height);
+            R.canvas.width  = this.width  = U.toInt(options.width,     Settings.width);
+            R.canvas.height = this.height = U.toInt(options.height,    Settings.height);
         }
 
-        this.lanes                  = Util.toInt(options.lanes,          this.lanes);
-        this.roadWidth              = Util.toInt(options.roadWidth,      this.roadWidth);
-        this.cameraHeight           = Util.toInt(options.cameraHeight,   this.cameraHeight);
-        this.drawDistance           = Util.toInt(options.drawDistance,   this.drawDistance);
-        this.fogDensity             = Util.toInt(options.fogDensity,     this.fogDensity);
-        this.fieldOfView            = Util.toInt(options.fieldOfView,    this.fieldOfView);
-        this.segmentLength          = Util.toInt(options.segmentLength,  this.segmentLength);
-        this.rumbleLength           = Util.toInt(options.rumbleLength,   this.rumbleLength);
+        this.lanes                  = U.toInt(options.lanes,          this.lanes);
+        this.roadWidth              = U.toInt(options.roadWidth,      this.roadWidth);
+        this.cameraHeight           = U.toInt(options.cameraHeight,   this.cameraHeight);
+        this.drawDistance           = U.toInt(options.drawDistance,   this.drawDistance);
+        this.fogDensity             = U.toInt(options.fogDensity,     this.fogDensity);
+        this.fieldOfView            = U.toInt(options.fieldOfView,    this.fieldOfView);
+        this.segmentLength          = U.toInt(options.segmentLength,  this.segmentLength);
+        this.rumbleLength           = U.toInt(options.rumbleLength,   this.rumbleLength);
         this.cameraDepth            = 1 / Math.tan( ( this.fieldOfView / 2 ) * Math.PI / 180);
         this.playerZ                = ( this.cameraHeight * this.cameraDepth );
         this.resolution             = this.height / 480;
@@ -247,19 +250,19 @@ var Settings = {
 
     addRoad: function( enter, hold, leave, curve, y ) {
         var startY   = this.lastY();
-        var endY     = startY + ( Util.toInt( y, 0 ) * this.segmentLength );
+        var endY     = startY + ( U.toInt( y, 0 ) * this.segmentLength );
         var n, total = enter + hold + leave;
 
         for( n = 0 ; n < enter ; n++ ) {
-            this.addSegment( Util.easeIn( 0, curve, n/enter ), Util.easeInOut( startY, endY, n / total ) );
+            this.addSegment( U.easeIn( 0, curve, n/enter ), U.easeInOut( startY, endY, n / total ) );
         }
 
         for( n = 0 ; n < hold  ; n++ ) {
-            this.addSegment( curve, Util.easeInOut( startY, endY, ( enter + n ) / total ) );
+            this.addSegment( curve, U.easeInOut( startY, endY, ( enter + n ) / total ) );
         }
 
         for( n = 0 ; n < leave ; n++ ) {
-            this.addSegment( Util.easeInOut( curve, 0, n/leave ), Util.easeInOut( startY, endY, ( enter + hold + n ) / total ) );
+            this.addSegment( U.easeInOut( curve, 0, n/leave ), U.easeInOut( startY, endY, ( enter + hold + n ) / total ) );
         }
     },
 
@@ -306,10 +309,17 @@ var Settings = {
 }
 
 var Game = {
-    run : function( options ) {
+    run : function( Util, Render, options ) {
         
+        U = Util;
+        R = Render;
+
         Settings.client = options.client;
-        console.log( Settings.client );
+
+        if ( Settings.client )
+            console.log("F-Nought initiated.");
+        else
+            console.log("Started F-Infinity.")
 
         Game.loadImages( options.images, function( images ) {
             
@@ -322,14 +332,12 @@ var Game = {
                 render = options.render,
                 step   = options.step,
                 now    = null,
-                last   = Util.timestamp(),
+                last   = U.timestamp(),
                 dt     = 0,
                 gdt    = 0;
 
-            Settings.client = options.client;
-
             var frame = function() {
-                now = Util.timestamp();
+                now = U.timestamp();
                 dt = Math.min( 1, ( now - last ) / 1000 );
                 gdt += dt;
                 while ( gdt > step ) {
@@ -381,7 +389,7 @@ var Game = {
 
         Game.updateCars( dt, playerSegment, playerW );
 
-        Settings.position = Util.increase( Settings.position, dt * Settings.speed, Settings.trackLength );        
+        Settings.position = U.increase( Settings.position, dt * Settings.speed, Settings.trackLength );        
 
         if ( Settings.keyLeft )
             Settings.playerX -= dx;
@@ -391,33 +399,33 @@ var Game = {
         Settings.playerX -= (dx * speedPercent * playerSegment.curve * Settings.centrifugal);
 
         if ( Settings.keyFaster )
-            Settings.speed = Util.accelerate( Settings.speed, Settings.accel, dt );
+            Settings.speed = U.accelerate( Settings.speed, Settings.accel, dt );
         else if ( Settings.keySlower )
-            Settings.speed = Util.accelerate( Settings.speed, Settings.breaking, dt );
+            Settings.speed = U.accelerate( Settings.speed, Settings.breaking, dt );
         else
-            Settings.speed = Util.accelerate( Settings.speed, Settings.decel, dt );
+            Settings.speed = U.accelerate( Settings.speed, Settings.decel, dt );
 
         if ( ( ( Settings.playerX < -1 ) || ( Settings.playerX > 1 ) ) && ( Settings.speed > Settings.offRoadLimit ) )
-            Settings.speed = Util.accelerate( Settings.speed, Settings.offRoadDecel, dt );
+            Settings.speed = U.accelerate( Settings.speed, Settings.offRoadDecel, dt );
 
         for( n = 0 ; n < playerSegment.cars.length ; n++ ) {
             car  = playerSegment.cars[n];
             carW = car.sprite.w * SPRITES.SCALE;
             if ( Settings.speed > car.speed ) {
-                if (Util.overlap( Settings.playerX, playerW, car.offset, carW, 0.8)) {
+                if (U.overlap( Settings.playerX, playerW, car.offset, carW, 0.8)) {
                     Settings.speed    = car.speed * ( car.speed / Settings.speed );
-                    Settings.position = Util.increase( car.z, -Settings.playerZ, Settings.trackLength );
+                    Settings.position = U.increase( car.z, -Settings.playerZ, Settings.trackLength );
                     break;
                 }
             }
         }
 
-        Settings.skyOffset  = Util.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
-        Settings.hillOffset = Util.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
-        Settings.treeOffset = Util.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
+        Settings.skyOffset  = U.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
+        Settings.hillOffset = U.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
+        Settings.treeOffset = U.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
 
-        Settings.playerX = Util.limit( Settings.playerX, -2, 2 );     // dont ever let player go too far out of bounds
-        Settings.speed   = Util.limit( Settings.speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
+        Settings.playerX = U.limit( Settings.playerX, -2, 2 );     // dont ever let player go too far out of bounds
+        Settings.speed   = U.limit( Settings.speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
 
     },
 
@@ -427,8 +435,8 @@ var Game = {
             car         = cars[n];
             oldSegment  = Settings.findSegment(car.z);
             car.offset  = car.offset + this.updateCarOffset(car, oldSegment, playerSegment, playerW);
-            car.z       = Util.increase(car.z, dt * car.speed, Settings.trackLength);
-            car.percent = Util.percentRemaining( car.z, Settings.segmentLength ); // useful for interpolation during rendering phase
+            car.z       = U.increase(car.z, dt * car.speed, Settings.trackLength);
+            car.percent = U.percentRemaining( car.z, Settings.segmentLength ); // useful for interpolation during rendering phase
             newSegment  = Settings.findSegment( car.z );
 
             if ( oldSegment != newSegment ) {
@@ -452,7 +460,7 @@ var Game = {
         for(i = 1 ; i < lookahead ; i++) {
             segment = Settings.segments[ ( carSegment.index + i ) % Settings.segments.length ];
 
-            if ( ( segment === playerSegment ) && ( car.speed > Settings.speed ) && (Util.overlap( Settings.playerX, playerW, car.offset, carW, 1.2 ) ) ) {
+            if ( ( segment === playerSegment ) && ( car.speed > Settings.speed ) && (U.overlap( Settings.playerX, playerW, car.offset, carW, 1.2 ) ) ) {
 
                 if ( Settings.playerX > 0.5 ) {
                     dir = -1;
@@ -468,7 +476,7 @@ var Game = {
             for( j = 0 ; j < segment.cars.length ; j++ ) {
                 otherCar  = segment.cars[j];
                 otherCarW = otherCar.sprite.w * SPRITES.SCALE;
-                if ( ( car.speed > otherCar.speed ) && Util.overlap( car.offset, carW, otherCar.offset, otherCarW, 1.2 ) ) {
+                if ( ( car.speed > otherCar.speed ) && U.overlap( car.offset, carW, otherCar.offset, otherCarW, 1.2 ) ) {
                     if ( otherCar.offset > 0.5 )
                         dir = -1;
                     else if ( otherCar.offset < -0.5 )

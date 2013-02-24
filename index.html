@@ -30,9 +30,9 @@
             </canvas>
         </div>
 
+
         <script src="http://localhost:8080/socket.io/socket.io.js"></script>
         <script src="js/utils.js"></script>
-
         <script src="js/game.js"></script>
         <script src="js/render.js"></script>
         <script src="js/client.js"></script>
@@ -41,7 +41,8 @@
             Settings.init();
             Render.init();
             Client.init();
-            Game.run({
+            Game.run( Util, Render,
+                      {
                 canvas: Settings.canvas,
                 render: Render.render,
                 update: Game.update,
