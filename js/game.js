@@ -9,6 +9,10 @@ var Player = {
     Z             : null,                    // player relative z distance from camera (computed)
     position      : 0,                       // current camera Z position (add playerZ to get player's absolute Z position)
     speed         : 0,                       // current speed
+    keyLeft       : false,
+    keyRight      : false,
+    keyFaster     : false,
+    keySlower     : false,
 }
 
 var Settings = {
@@ -50,11 +54,6 @@ var Settings = {
     decel         : -this.maxSpeed/5,             // 'natural' deceleration rate when neither accelerating, nor braking
     totalCars     : 0,
 
-    keyLeft   : false,
-    keyRight  : false,
-    keyFaster : false,
-    keySlower : false,
-
     //must call init! Some values in Settings null
     init: function() {
         //don't update client because that was done in Game.run
@@ -92,11 +91,6 @@ var Settings = {
         this.offRoadDecel  = -this.maxSpeed/2;             // off road deceleration is somewhere in between
         this.offRoadLimit  =  this.maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
         this.totalCars     = 0;                     // total number of cars on the road
-
-        this.keyLeft       = false;
-        this.keyRight      = false;
-        this.keyFaster     = false;
-        this.keySlower     = false;
     },
 
     addPlayer: function( i ) {
@@ -107,6 +101,10 @@ var Settings = {
         this.players[i].Z = Settings.cameraHeight * Settings.cameraDepth;
         this.players[i].speed = 0;
         this.players[i].position = 0;
+        this.players[i].keyLeft       = false;
+        this.players[i].keyRight      = false;
+        this.players[i].keyFaster     = false;
+        this.players[i].keySlower     = false;
 
     },
 
@@ -244,6 +242,12 @@ var Settings = {
         this.rumbleLength           = U.toInt(options.rumbleLength,   this.rumbleLength);
         this.cameraDepth            = 1 / Math.tan( ( this.fieldOfView / 2 ) * Math.PI / 180);
         this.resolution             = this.height / 480;
+
+        for ( i = 0; i < this.players.length; i++ ) {
+            if ( this.players[i] ) {
+                this.players[i].Z = this.cameraHeight * this.cameraDepth;
+            }
+        }
 
         if (( this.segments.length == 0) || (options.segmentLength) || (options.rumbleLength))
             this.resetRoad(); // only rebuild road when necessary
@@ -402,7 +406,7 @@ var Game = {
     },
 
     update: function( dt ) {
-
+        console.log( Settings.players );
         for( n = 0 ; n < Settings.players.length ; n++ ) {
             if ( !Settings.players[n] )
                 continue;
@@ -419,22 +423,24 @@ var Game = {
             //disable AI cars for now
             //Game.updateCars( dt, playerSegment, playerW );
 
-            Settings.position = U.increase( Settings.position, dt * speed, Settings.trackLength );        
+            Settings.players[n].position = U.increase( position, dt * speed, Settings.trackLength );        
 
             //only use key info if server or is client and me is n
             if ( !Settings.client ? n != Settings.me : n == Settings.me ) {
-                if ( Settings.keyLeft )
+                console.log( "updating my speed" );
+                if ( Settings.players[n].keyLeft )
                     Settings.players[n].X -= dx;
-                else if ( Settings.keyRight )
+                else if ( Settings.players[n].keyRight )
                     Settings.players[n].X += dx;
             }
 
             Settings.players[n].X -= (dx * speedPercent * playerSegment.curve * Settings.centrifugal);
 
             if ( !Settings.client ? n != Settings.me : n == Settings.me ) {
-                if ( Settings.keyFaster )
+                console.log( "updating my speed" );
+                if ( Settings.players[n].keyFaster )
                     Settings.players[n].speed = U.accelerate( speed, Settings.accel, dt );
-                else if ( Settings.keySlower )
+                else if ( Settings.players[n].keySlower )
                     Settings.players[n].speed = U.accelerate( speed, Settings.breaking, dt );
                 else
                     Settings.players[n].speed = U.accelerate( speed, Settings.decel, dt );

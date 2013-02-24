@@ -172,10 +172,11 @@ var Render = {
 
     render: function( position ) {
 
-        var playerZ = Settings.players[ Settings.me ].Z;
+        var playerZ = Settings.players[ Settings.me ].Z; //shouldn't be zero!
+        var speed = Settings.players[ Settings.me ].speed;
         var playerX = Settings.players[ Settings.me ].X;
 
-        console.log( playerZ );
+        //console.log( { playerZ: playerZ, speed: speed, playerX: playerX } );
 
         var baseSegment   = Settings.findSegment( position );
         var basePercent   = Util.percentRemaining( position, Settings.segmentLength );
@@ -256,8 +257,8 @@ var Render = {
 
             if ( segment == playerSegment ) {
                 console.log( "rendering player sprite" );
-                Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, Settings.speed/Settings.maxSpeed,
-                               Settings.cameraDepth/(Settings.playerZ),
+                Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, speed/Settings.maxSpeed,
+                               Settings.cameraDepth/(playerZ),
                                Settings.width / 2,
                                ( Settings.height / 2 ) - ( Settings.cameraDepth / Settings.playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
                                Settings.speed * ( Settings.keyLeft ? -1 : Settings.keyRight ? 1 : 0 ),

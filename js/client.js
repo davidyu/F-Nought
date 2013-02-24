@@ -9,10 +9,11 @@ var Client = {
         this.socket.on( "setup", function( data ) {
             Settings.me = parseInt( data.d );
 
+            var me = Settings.me;
             Settings.init();
-            Settings.addPlayer( Settings.me );
+            Settings.addPlayer( me );
 
-            console.log( Settings.players[ Settings.me ] );
+            console.log( Settings.players[ me ] );
             
             Render.init();
 
@@ -24,18 +25,19 @@ var Client = {
                 step: Settings.step,
                 client: true,
                 images: ["background", "sprites"],
-                keys: [ { keys: [KEY.LEFT,  KEY.A], mode: 'down', action: function() { Settings.keyLeft   = true; Client.sendKeyState();  } },
-                        { keys: [KEY.RIGHT, KEY.D], mode: 'down', action: function() { Settings.keyRight  = true; Client.sendKeyState();  } },
-                        { keys: [KEY.UP,    KEY.W], mode: 'down', action: function() { Settings.keyFaster = true;  Client.sendKeyState(); } },
-                        { keys: [KEY.DOWN,  KEY.S], mode: 'down', action: function() { Settings.keySlower = true;  Client.sendKeyState(); } },
-                        { keys: [KEY.LEFT,  KEY.A], mode: 'up',   action: function() { Settings.keyLeft   = false; Client.sendKeyState(); } },
-                        { keys: [KEY.RIGHT, KEY.D], mode: 'up',   action: function() { Settings.keyRight  = false; Client.sendKeyState(); } },
-                        { keys: [KEY.UP,    KEY.W], mode: 'up',   action: function() { Settings.keyFaster = false; Client.sendKeyState(); } },
-                        { keys: [KEY.DOWN,  KEY.S], mode: 'up',   action: function() { Settings.keySlower = false; Client.sendKeyState(); } } ],
+                keys: [ { keys: [KEY.LEFT,  KEY.A], mode: 'down', action: function() { Settings.players[me].keyLeft   = true; Client.sendKeyState();  } },
+                        { keys: [KEY.RIGHT, KEY.D], mode: 'down', action: function() { Settings.players[me].keyRight  = true; Client.sendKeyState();  } },
+                        { keys: [KEY.UP,    KEY.W], mode: 'down', action: function() { Settings.players[me].keyFaster = true;  Client.sendKeyState(); } },
+                        { keys: [KEY.DOWN,  KEY.S], mode: 'down', action: function() { Settings.players[me].keySlower = true;  Client.sendKeyState(); } },
+                        { keys: [KEY.LEFT,  KEY.A], mode: 'up',   action: function() { Settings.players[me].keyLeft   = false; Client.sendKeyState(); } },
+                        { keys: [KEY.RIGHT, KEY.D], mode: 'up',   action: function() { Settings.players[me].keyRight  = false; Client.sendKeyState(); } },
+                        { keys: [KEY.UP,    KEY.W], mode: 'up',   action: function() { Settings.players[me].keyFaster = false; Client.sendKeyState(); } },
+                        { keys: [KEY.DOWN,  KEY.S], mode: 'up',   action: function() { Settings.players[me].keySlower = false; Client.sendKeyState(); } } ],
                 ready: function(images) {
                           Settings.background = images[0];
                           Settings.sprites    = images[1];
                           Settings.reset();
+                          console.log( Settings.players[ me ] );
                        }
             } );
 
