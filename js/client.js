@@ -3,6 +3,14 @@ var Client = {
 
     init: function() {
         this.socket = io.connect("http://localhost:8080");
+
+        this.socket.on( 'positionchange', function( data ) {
+            console.log( data );
+
+            Settings.position = data.position;
+            Settings.speed = data.speed;
+            Settings.accel = data.accel;
+        } );
     },
 
     sendKeyState: function() {

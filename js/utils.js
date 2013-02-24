@@ -66,6 +66,4 @@ function requestAnimationFrame( callback, element ) {
    setTimeout( callback, 1000 / 60 );
 }
 
-if ( this.global !== undefined ) {
-    global.requestAnimationFrame = requestAnimationFrame;
-}
+global.requestAnimationFrame = requestAnimationFrame;

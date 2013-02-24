@@ -13,9 +13,8 @@ Tasks
 Bridge server and client using socket.IO DONE
 Separate game update logic from rendering code DONE
     Anything to do with DOM is rendering code YEAH
-Start running game simulation on server
-Implement single player networked game
-
+Start running game simulation on server DONE
+Implement single player networked game DONE FUCK YEAH
 
 Extend to two players
 Extend to four players

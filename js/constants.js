@@ -76,11 +76,8 @@ SPRITES.CARS       = [SPRITES.CAR01, SPRITES.CAR02, SPRITES.CAR03, SPRITES.CAR04
 
 //definitions for node
 
-if ( this.global !== undefined )
-{
-    global.KEY = KEY;
-    global.COLORS = COLORS;
-    global.BACKGROUND = BACKGROUND;
-    global.ROAD = ROAD;
-    global.SPRITES = SPRITES;
-}
+global.KEY = KEY;
+global.COLORS = COLORS;
+global.BACKGROUND = BACKGROUND;
+global.ROAD = ROAD;
+global.SPRITES = SPRITES;

@@ -43,7 +43,7 @@ var Settings = {
     decel         : -this.maxSpeed/5,             // 'natural' deceleration rate when neither accelerating, nor braking
     offRoadDecel  : -this.maxSpeed/2,             // off road deceleration is somewhere in between
     offRoadLimit  :  this.maxSpeed/4,             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-    totalCars     : 200,
+    totalCars     : 0,
 
     keyLeft   : false,
     keyRight  : false,
@@ -89,7 +89,7 @@ var Settings = {
         this.decel         = -this.maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
         this.offRoadDecel  = -this.maxSpeed/2;             // off road deceleration is somewhere in between
         this.offRoadLimit  =  this.maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-        this.totalCars     = 200;                     // total number of cars on the road
+        this.totalCars     = 0;                     // total number of cars on the road
 
 
         this.keyLeft       = false;
@@ -316,10 +316,11 @@ var Game = {
 
         Settings.client = options.client;
 
-        if ( Settings.client )
+        if ( Settings.client ) {
             console.log("F-Nought initiated.");
-        else
+        } else {
             console.log("Started F-Infinity.")
+        }
 
         Game.loadImages( options.images, function( images ) {
             
@@ -350,7 +351,7 @@ var Game = {
                 if ( Settings.client ) {
                     render( Settings.position );
                 }
-                
+
                 requestAnimationFrame( frame, canvas );
 
                 
