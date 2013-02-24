@@ -38,7 +38,6 @@ var Client = {
                           Settings.background = images[0];
                           Settings.sprites    = images[1];
                           Settings.reset();
-                          console.log( Settings.players[ me ] );
                        }
             } );
 
@@ -46,15 +45,25 @@ var Client = {
 
         //me
         this.socket.on( 'positionverify', function( data ) {
-            Settings.players[ Settings.me ].position = data.position;
+            if ( data.pid == Settings.me ) {
+                Settings.players[ Settings.me ].position = data.position;
+            }
         } );
 
         //other players
         this.socket.on( 'positionchange', function( data ) {
+            if ( !Settings.players[ data.pid ]) {
+                Settings.addPlayer( data.pid );
+            }
+
             Settings.players[ data.pid ].position = data.position;
             Settings.players[ data.pid ].speed = data.speed;
+            Settings.players[ data.pid ].X = data.X;
             Settings.players[ data.pid ].keyLeft = data.keyLeft;
             Settings.players[ data.pid ].keyRight = data.keyRight;
+            Settings.players[ data.pid ].keyFaster = data.keyFaster;
+            Settings.players[ data.pid ].keySlower = data.keySlower;
+            
         } );
 
         this.socket.on( 'message', function( message ) {

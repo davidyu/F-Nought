@@ -172,14 +172,17 @@ var Render = {
 
     render: function( position ) {
 
+        //console.log( "my speed: " + Settings.players[ Settings.me ].speed );
+        //console.log( "my position: " + Settings.players[ Settings.me ].position );
+
         var playerZ = Settings.players[ Settings.me ].Z; //shouldn't be zero!
         var speed = Settings.players[ Settings.me ].speed;
         var playerX = Settings.players[ Settings.me ].X;
 
-        var baseSegment   = Settings.findSegment( position );
-        var basePercent   = Util.percentRemaining( position, Settings.segmentLength );
-        var playerSegment = Settings.findSegment( position + playerZ );
-        var playerPercent = Util.percentRemaining( position + playerZ, Settings.segmentLength );
+        var baseSegment   = Settings.findSegment( Settings.players[ Settings.me ].position );
+        var basePercent   = Util.percentRemaining( Settings.players[ Settings.me ].position, Settings.segmentLength );
+        var playerSegment = Settings.findSegment( Settings.players[ Settings.me ].position + playerZ );
+        var playerPercent = Util.percentRemaining( Settings.players[ Settings.me ].position + playerZ, Settings.segmentLength );
         var playerY       = Util.interpolate( playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent );
 
         var maxy          = Settings.height;
@@ -244,6 +247,7 @@ var Render = {
             }
 
             // render other cars
+            
             for(i = 0 ; i < Settings.players.length ; i++) {
 
                 var car = Settings.players[i];
@@ -280,7 +284,6 @@ var Render = {
             }
 
             if ( segment == playerSegment ) {
-                console.log( "rendering player sprite" );
                 Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, speed/Settings.maxSpeed,
                                Settings.cameraDepth/playerZ,
                                Settings.width / 2,
