@@ -346,8 +346,11 @@ var Game = {
                 }
                 
                 last = now;
-                render( Settings.position );
 
+                if ( Settings.client ) {
+                    render( Settings.position );
+                }
+                
                 requestAnimationFrame( frame, canvas );
 
                 
@@ -513,8 +516,10 @@ var Game = {
             }
         };
 
-        Dom.on( document, 'keydown', function( ev ) { onkey( ev.keyCode, 'down' ); } );
-        Dom.on( document, 'keyup',   function( ev ) { onkey( ev.keyCode, 'up' );   } );
+        if ( Settings.client ) {
+            Dom.on( document, 'keydown', function( ev ) { onkey( ev.keyCode, 'down' ); } );
+            Dom.on( document, 'keyup',   function( ev ) { onkey( ev.keyCode, 'up' );   } );
+        }
     },
 
     playMusic: function() {

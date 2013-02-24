@@ -63,5 +63,9 @@ module.exports = {
 
 //should be overriden
 function requestAnimationFrame( callback, element ) {
-   window.setTimeout( callback, 1000 / 60 );
+   setTimeout( callback, 1000 / 60 );
+}
+
+if ( this.global !== undefined ) {
+    global.requestAnimationFrame = requestAnimationFrame;
 }
