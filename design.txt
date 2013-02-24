@@ -16,6 +16,7 @@ Separate game update logic from rendering code DONE
 Start running game simulation on server DONE
 Implement single player networked game DONE FUCK YEAH
 
+Separate player states into arrays in game module DONE
 Extend to two players
 Extend to four players
 

@@ -4,6 +4,13 @@
 var U = {};
 var R = {};
 
+var Player = {
+    X             : 0,                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
+    Z             : null,                    // player relative z distance from camera (computed)
+    position      : 0,                       // current camera Z position (add playerZ to get player's absolute Z position)
+    speed         : 0,                       // current speed
+}
+
 var Settings = {
 
     client        : true,                    // are we the client?
@@ -20,6 +27,8 @@ var Settings = {
     hillOffset    : 0,                       // current hill scroll offset
     treeOffset    : 0,                       // current tree scroll offset
     segments      : [],                      // array of road segments
+    players       : [],                      // array of players in this game
+    me            : 0,                       // who am I in the players array?
     background    : null,                    // our background image (loaded below)
     sprites       : null,                    // our spritesheet (loaded below)
     resolution    : null,                    // scaling factor to provide resolution independence (computed)
@@ -32,17 +41,13 @@ var Settings = {
     cameraHeight  : 1000,                    // z height of camera
     cameraDepth   : null,                    // z distance camera is from screen (computed)
     drawDistance  : 300,                     // number of segments to draw
-    playerX       : 0,                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
-    playerZ       : null,                    // player relative z distance from camera (computed)
     fogDensity    : 5,                       // exponential fog density
-    position      : 0,                       // current camera Z position (add playerZ to get player's absolute Z position)
-    speed         : 0,                       // current speed
-    maxSpeed      : this.segmentLength/this.step,      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+    offRoadDecel  : -this.maxSpeed/2,             // off road deceleration is somewhere in between
+    offRoadLimit  :  this.maxSpeed/4,             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)    
+    maxSpeed      :  this.segmentLength/this.step,      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
     accel         :  this.maxSpeed/5,        // acceleration rate - tuned until it 'felt' right
     breaking      : -this.maxSpeed,               // deceleration rate when braking
     decel         : -this.maxSpeed/5,             // 'natural' deceleration rate when neither accelerating, nor braking
-    offRoadDecel  : -this.maxSpeed/2,             // off road deceleration is somewhere in between
-    offRoadLimit  :  this.maxSpeed/4,             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
     totalCars     : 0,
 
     keyLeft   : false,
@@ -66,6 +71,7 @@ var Settings = {
         this.hillOffset    = 0;                       // current hill scroll offset
         this.treeOffset    = 0;                       // current tree scroll offset
         this.segments      = [];                      // array of road segments
+        this.players       = [ Player, Player ];
         this.background    = null;                    // our background image (loaded below)
         this.sprites       = null;                    // our spritesheet (loaded below)
         this.resolution    = null;                    // scaling factor to provide resolution independence (computed)
@@ -78,11 +84,7 @@ var Settings = {
         this.cameraHeight  = 1400;                    // z height of camera
         this.cameraDepth   = null;                    // z distance camera is from screen (computed)
         this.drawDistance  = 300;                     // number of segments to draw
-        this.playerX       = 0;                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
-        this.playerZ       = null;                    // player relative z distance from camera (computed)
         this.fogDensity    = 5;                       // exponential fog density
-        this.position      = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
-        this.speed         = 0;                       // current speed
         this.maxSpeed      = this.segmentLength/this.step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
         this.accel         =  this.maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
         this.breaking      = -this.maxSpeed;               // deceleration rate when braking
@@ -91,13 +93,20 @@ var Settings = {
         this.offRoadLimit  =  this.maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
         this.totalCars     = 0;                     // total number of cars on the road
 
-
         this.keyLeft       = false;
         this.keyRight      = false;
         this.keyFaster     = false;
         this.keySlower     = false;
     },
 
+    //FOR SERVER USE ONLY
+    addPlayer: function() {
+        this.players.push( Player );
+    },
+
+    removePlayer: function( index ) {
+        this.players[ index ] = null;
+    },
 
     findSegment: function( z ) {
         return this.segments[ Math.floor( z/this.segmentLength ) % this.segments.length ];
