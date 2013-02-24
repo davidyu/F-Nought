@@ -52,10 +52,18 @@ var Client = {
 
         //other players
         this.socket.on( 'positionchange', function( data ) {
-            if ( !Settings.players[ data.pid ]) {
-                Settings.addPlayer( data.pid );
+
+            for ( i = 0; i < data.players.length; i++ ) {
+                if ( !Settings.players[i]) {
+                    Settings.addPlayer(i);
+                }
+
+                Settings.players[i].position = data.players[i].position;
+                Settings.players[i].speed = data.players[i].speed;
+                Settings.players[i].X = data.players[i].X;
             }
 
+            /*
             Settings.players[ data.pid ].position = data.position;
             Settings.players[ data.pid ].speed = data.speed;
             Settings.players[ data.pid ].X = data.X;
@@ -63,7 +71,7 @@ var Client = {
             Settings.players[ data.pid ].keyRight = data.keyRight;
             Settings.players[ data.pid ].keyFaster = data.keyFaster;
             Settings.players[ data.pid ].keySlower = data.keySlower;
-            
+            */
         } );
 
         this.socket.on( 'message', function( message ) {
