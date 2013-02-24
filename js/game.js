@@ -100,8 +100,15 @@ var Settings = {
     },
 
     //FOR SERVER USE ONLY
-    addPlayer: function() {
-        this.players.push( Player );
+    addPlayer: function( i ) {
+        this.players[i] = Player;
+
+        //reset player i
+        this.players[i].X = 0;
+        this.players[i].Z = Settings.cameraHeight * Settings.cameraDepth;
+        this.players[i].speed = 0;
+        this.players[i].position = 0;
+
     },
 
     removePlayer: function( index ) {
@@ -137,8 +144,10 @@ var Settings = {
         this.resetSprites();
         this.resetCars();
 
-        this.segments[ this.findSegment( this.playerZ ).index + 2 ].color = COLORS.START;
-        this.segments[ this.findSegment( this.playerZ ).index + 3 ].color = COLORS.START;
+        var playerZ = this.players[ this.me ].Z;
+
+        this.segments[ this.findSegment( playerZ ).index + 2 ].color = COLORS.START;
+        this.segments[ this.findSegment( playerZ ).index + 3 ].color = COLORS.START;
         for(var n = 0 ; n < this.rumbleLength; n++)
             this.segments[ this.segments.length - 1 - n ].color = COLORS.FINISH;
 
@@ -233,7 +242,7 @@ var Settings = {
         this.segmentLength          = U.toInt(options.segmentLength,  this.segmentLength);
         this.rumbleLength           = U.toInt(options.rumbleLength,   this.rumbleLength);
         this.cameraDepth            = 1 / Math.tan( ( this.fieldOfView / 2 ) * Math.PI / 180);
-        this.playerZ                = ( this.cameraHeight * this.cameraDepth );
+        this.players[ this.me ].z   = ( this.cameraHeight * this.cameraDepth );
         this.resolution             = this.height / 480;
 
         if (( this.segments.length == 0) || (options.segmentLength) || (options.rumbleLength))
@@ -358,7 +367,7 @@ var Game = {
                 last = now;
 
                 if ( Settings.client ) {
-                    render( Settings.position );
+                    render( Settings.players[ Settings.me ].position );
                 }
 
                 requestAnimationFrame( frame, canvas );
@@ -395,50 +404,67 @@ var Game = {
 
     update: function( dt ) {
 
-        var playerSegment = Settings.findSegment( Settings.position + Settings.playerZ );
-        var speedPercent  = Settings.speed/Settings.maxSpeed;
-        var playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
-        var dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+        for( n = 0 ; n < Settings.players.length ; n++ ) {
+            if ( !Settings.players[n] )
+                continue;
 
-        Game.updateCars( dt, playerSegment, playerW );
+            var speed = Settings.players[n].speed;
+            var position = Settings.players[n].position;
 
-        Settings.position = U.increase( Settings.position, dt * Settings.speed, Settings.trackLength );        
+            var playerZ = Settings.players[n].Z;
+            var playerSegment = Settings.findSegment( position + playerZ );
+            var speedPercent  = speed/Settings.maxSpeed;
+            var playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
+            var dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
-        if ( Settings.keyLeft )
-            Settings.playerX -= dx;
-        else if ( Settings.keyRight )
-            Settings.playerX += dx;
+            Game.updateCars( dt, playerSegment, playerW );
 
-        Settings.playerX -= (dx * speedPercent * playerSegment.curve * Settings.centrifugal);
+            Settings.position = U.increase( Settings.position, dt * speed, Settings.trackLength );        
 
-        if ( Settings.keyFaster )
-            Settings.speed = U.accelerate( Settings.speed, Settings.accel, dt );
-        else if ( Settings.keySlower )
-            Settings.speed = U.accelerate( Settings.speed, Settings.breaking, dt );
-        else
-            Settings.speed = U.accelerate( Settings.speed, Settings.decel, dt );
+            if ( Settings.keyLeft )
+                Settings.players[n].X -= dx;
+            else if ( Settings.keyRight )
+                Settings.players[n].X += dx;
 
-        if ( ( ( Settings.playerX < -1 ) || ( Settings.playerX > 1 ) ) && ( Settings.speed > Settings.offRoadLimit ) )
-            Settings.speed = U.accelerate( Settings.speed, Settings.offRoadDecel, dt );
+            Settings.players[n].X -= (dx * speedPercent * playerSegment.curve * Settings.centrifugal);
 
-        for( n = 0 ; n < playerSegment.cars.length ; n++ ) {
-            car  = playerSegment.cars[n];
-            carW = car.sprite.w * SPRITES.SCALE;
-            if ( Settings.speed > car.speed ) {
-                if (U.overlap( Settings.playerX, playerW, car.offset, carW, 0.8)) {
-                    Settings.speed    = car.speed * ( car.speed / Settings.speed );
-                    Settings.position = U.increase( car.z, -Settings.playerZ, Settings.trackLength );
-                    break;
+            if ( Settings.keyFaster )
+                Settings.players[n].speed = U.accelerate( speed, Settings.accel, dt );
+            else if ( Settings.keySlower )
+                Settings.players[n].speed = U.accelerate( speed, Settings.breaking, dt );
+            else
+                Settings.players[n].speed = U.accelerate( speed, Settings.decel, dt );
+
+            speed = Settings.players[n].speed; //speed has been updated
+
+            var playerX = Settings.players[n].X;
+
+            if ( ( ( playerX < -1 ) || ( playerX > 1 ) ) && ( speed > Settings.offRoadLimit ) )
+                Settings.players[n].speed = U.accelerate( speed, Settings.offRoadDecel, dt );n
+
+            speed = Settings.players[n].speed; //speed has been updated
+
+            for( n = 0 ; n < playerSegment.cars.length ; n++ ) {
+                car  = playerSegment.cars[n];
+                carW = car.sprite.w * SPRITES.SCALE;
+                if ( speed > car.speed ) {
+                    if (U.overlap( playerX, playerW, car.offset, carW, 0.8)) {
+                        Settings.players[n].speed = car.speed * ( car.speed / speed );
+                        Settings.position = U.increase( car.z, -playerZ, Settings.trackLength );
+                        break;
+                    }
                 }
             }
-        }
 
-        Settings.skyOffset  = U.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
-        Settings.hillOffset = U.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
-        Settings.treeOffset = U.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
+            speed = Settings.players[n].speed; //speed has been updated
 
-        Settings.playerX = U.limit( Settings.playerX, -2, 2 );     // dont ever let player go too far out of bounds
-        Settings.speed   = U.limit( Settings.speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
+            Settings.skyOffset  = U.increase(Settings.skyOffset,  Settings.skySpeed  * playerSegment.curve * speedPercent, 1);
+            Settings.hillOffset = U.increase(Settings.hillOffset, Settings.hillSpeed * playerSegment.curve * speedPercent, 1);
+            Settings.treeOffset = U.increase(Settings.treeOffset, Settings.treeSpeed * playerSegment.curve * speedPercent, 1);
+
+            Settings.players[n].X     = U.limit( playerX, -2, 2 );     // dont ever let player go too far out of bounds
+            Settings.players[n].speed = U.limit( speed, 0, Settings.maxSpeed ); // or exceed maxSpeed
+        }  
 
     },
 
@@ -470,20 +496,23 @@ var Game = {
         if ( ( carSegment.index - playerSegment.index ) > Settings.drawDistance )
             return 0;
 
+        var speed = Settings.players[ Settings.me ].speed;
+        var playerX = Settings.players[ Settings.me ].X; //speed has been updated
+
         for(i = 1 ; i < lookahead ; i++) {
             segment = Settings.segments[ ( carSegment.index + i ) % Settings.segments.length ];
 
-            if ( ( segment === playerSegment ) && ( car.speed > Settings.speed ) && (U.overlap( Settings.playerX, playerW, car.offset, carW, 1.2 ) ) ) {
+            if ( ( segment === playerSegment ) && ( car.speed > speed ) && (U.overlap( playerX, playerW, car.offset, carW, 1.2 ) ) ) {
 
-                if ( Settings.playerX > 0.5 ) {
+                if ( playerX > 0.5 ) {
                     dir = -1;
-                } else if ( Settings.playerX < -0.5 ) {
+                } else if ( playerX < -0.5 ) {
                     dir = 1;
                 } else {
-                    dir = ( car.offset > Settings.playerX ) ? 1 : -1;
+                    dir = ( car.offset > playerX ) ? 1 : -1;
                 }
 
-                return dir * 1/i * ( car.speed-Settings.speed ) / Settings.maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
+                return dir * 1/i * ( car.speed - speed ) / Settings.maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
             }
 
             for( j = 0 ; j < segment.cars.length ; j++ ) {
@@ -496,7 +525,7 @@ var Game = {
                         dir = 1;
                     else
                         dir = ( car.offset > otherCar.offset ) ? 1 : -1;
-                    return dir * 1 / i * ( car.speed-otherCar.speed ) / Settings.maxSpeed;
+                    return dir * 1 / i * ( car.speed - otherCar.speed ) / Settings.maxSpeed;
                 }
             }
         }
