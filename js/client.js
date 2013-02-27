@@ -2,7 +2,7 @@ var Client = {
     socket: null,
 
     init: function() {
-        this.socket = io.connect('http://localhost');
+        this.socket = io.connect('http://critter.wireless.yale.edu');
 
         this.socket.send( "inquire" ); //can i haz play
 
