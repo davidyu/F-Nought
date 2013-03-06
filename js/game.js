@@ -34,6 +34,7 @@ var Settings = {
     players       : [],                      // array of players in this game
     me            : 0,                       // who am I in the players array?
     background    : null,                    // our background image (loaded below)
+    ships         : null,
     sprites       : null,                    // our spritesheet (loaded below)
     resolution    : null,                    // scaling factor to provide resolution independence (computed)
     roadWidth     : 2000,                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
@@ -72,6 +73,7 @@ var Settings = {
         this.segments      = [];                      // array of road segments
         this.players       = [];
         this.background    = null;                    // our background image (loaded below)
+        this.ships         = null;
         this.sprites       = null;                    // our spritesheet (loaded below)
         this.resolution    = null;                    // scaling factor to provide resolution independence (computed)
         this.roadWidth     = 3000;                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth

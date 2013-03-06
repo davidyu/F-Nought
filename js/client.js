@@ -19,13 +19,13 @@ var Client = {
             Render.init();
 
             Game.run( Util, Render,
-                      {
+            {
                 canvas: Settings.canvas,
                 render: Render.render,
                 update: Game.update,
                 step: Settings.step,
                 client: true,
-                images: ["background", "sprites"],
+                images: ["background", "sprites", "ships"],
                 keys: [ { keys: [KEY.LEFT,  KEY.A], mode: 'down', action: function() { Settings.players[me].keyLeft   = true; Client.sendKeyState();  } },
                         { keys: [KEY.RIGHT, KEY.D], mode: 'down', action: function() { Settings.players[me].keyRight  = true; Client.sendKeyState();  } },
                         { keys: [KEY.UP,    KEY.W], mode: 'down', action: function() { Settings.players[me].keyFaster = true;  Client.sendKeyState(); } },
@@ -37,6 +37,7 @@ var Client = {
                 ready: function(images) {
                           Settings.background = images[0];
                           Settings.sprites    = images[1];
+                          Settings.ships      = images[2];
                           Settings.reset();
                        }
             } );

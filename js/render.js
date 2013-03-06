@@ -144,17 +144,19 @@ var Render = {
 
     player: function(ctx, width, height, resolution, roadWidth, sprites, speedPercent, scale, destX, destY, steer, updown) {
 
+        var offsetY = -10;
         var bounce = (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
         var sprite;
         if (steer < 0) {
-            sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT;
+            sprite = (updown > 0) ? SHIPS.PLAYER_UPHILL_LEFT : SHIPS.PLAYER_LEFT;
         } else if (steer > 0) {
-            sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT;
+            sprite = (updown > 0) ? SHIPS.PLAYER_UPHILL_RIGHT : SHIPS.PLAYER_RIGHT;
         } else {
-            sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT;
+            sprite = (updown > 0) ? SHIPS.PLAYER_UPHILL_STRAIGHT : SHIPS.PLAYER_STRAIGHT;
         }
 
-        Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1);
+        Render.sprite(ctx, width, height, resolution, roadWidth, Settings.sprites, SPRITES.SHADOW, scale, destX, destY, -0.5, -1);
+        Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + offsetY + bounce, -0.5, -1);
     },
 
     //---------------------------------------------------------------------------
@@ -268,23 +270,27 @@ var Render = {
                         steer  = Settings.players[i].keyLeft ? -1 : Settings.players[i].keyRight ? 1 : 0;
 
                     if (steer < 0) {
-                        sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT;
+                        sprite = (updown > 0) ? SHIPS.PLAYER_UPHILL_LEFT : SHIPS.PLAYER_LEFT;
                     } else if (steer > 0) {
-                        sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT;
+                        sprite = (updown > 0) ? SHIPS.PLAYER_UPHILL_RIGHT : SHIPS.PLAYER_RIGHT;
                     } else {
-                        sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT;
+                        sprite = (updown > 0) ? SHIPS.PLAYER_UPHILL_STRAIGHT : SHIPS.PLAYER_STRAIGHT;
                     }
                     spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent);
                     spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.X * Settings.roadWidth * Settings.width/2);
                     spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
 
-                    Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+                    var offsetY = -0.0; //leave this until I work out math
+
+                    console.log(( ( Settings.players[ Settings.me ].position - car.position ) / 60000 ));                    
+                    Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, SPRITES.SHADOW, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+                    Render.sprite(ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.ships, sprite, spriteScale, spriteX, spriteY + offsetY, -0.5, -1, segment.clip);
                 }
 
             }
 
             if ( segment == playerSegment ) {
-                Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.sprites, speed/Settings.maxSpeed,
+                Render.player( ctx, Settings.width, Settings.height, Settings.resolution, Settings.roadWidth, Settings.ships, speed/Settings.maxSpeed,
                                Settings.cameraDepth/playerZ,
                                Settings.width / 2,
                                ( Settings.height / 2 ) - ( Settings.cameraDepth / playerZ * Util.interpolate( playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent ) * Settings.height / 2 ),
